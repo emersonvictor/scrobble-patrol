@@ -3,6 +3,7 @@ import Foundation
 @MainActor
 protocol RecentScrobblesInteractorProtocol {
     func viewDidLoad()
+    func updateUser(username: String)
 }
 
 @MainActor
@@ -16,23 +17,15 @@ final class RecentScrobblesInteractor: RecentScrobblesInteractorProtocol {
     }
 
     func viewDidLoad() {
-        // Validate user
-        // If existis
-        // Load
-        // If not
-        // Nothing
+        // TODO: - Validate user and load screen
     }
     
     func updateUser(username: String) {
-        // Save user
+        // TODO: - Save user
         viewDidLoad()
     }
-    
-    // func load more (infinite scroll)
-    // retry load
-    // pullToRefresh
 }
 
 private extension RecentScrobblesInteractor {
-    // Load acording to page
+    // TODO: Load using current page
 }

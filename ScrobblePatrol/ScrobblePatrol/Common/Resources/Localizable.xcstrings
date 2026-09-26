@@ -1,0 +1,39 @@
+{
+  "sourceLanguage" : "pt-BR",
+  "strings" : {
+    "recentScrobbles.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Últimos scrobbles"
+          }
+        }
+      }
+    },
+    "username.confirm" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
+    },
+    "username.placeholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuário do Last.fm"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.3"
+}
