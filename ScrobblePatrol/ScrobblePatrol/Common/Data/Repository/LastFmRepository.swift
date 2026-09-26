@@ -10,7 +10,6 @@ protocol LastFmRepositoryProtocol {
     func getRecentTracks(
         username: String,
         page: Int,
-        limit: Int,
         completion: @escaping RecentScrobblesCompletion
     ) -> Task<Void, Never>
 
@@ -43,11 +42,10 @@ struct LastFmRepository: LastFmRepositoryProtocol {
     func getRecentTracks(
         username: String,
         page: Int = 1,
-        limit: Int = 50,
         completion: @escaping RecentScrobblesCompletion
     ) -> Task<Void, Never> {
         execute(
-            endpoint: .recentTracks(username: username, page: page, limit: limit),
+            endpoint: .recentTracks(username: username, page: page),
             transform: { (response: RecentTracksResponseDTO) in
                 RecentScrobblesPage(dto: response.recenttracks)
             },

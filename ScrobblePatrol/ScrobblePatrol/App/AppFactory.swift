@@ -12,9 +12,16 @@ enum AppFactory {
 
         let apiClient = LastFmAPIClient(apiKey: apiKey)
         let repository = LastFmRepository(apiClient: apiClient)
+        let usernameStore = UsernameStore()
 
-        let recent = RecentScrobblesFactory.make(repository: repository)
-        let grid = AlbumGridFactory.make(repository: repository)
+        let recent = RecentScrobblesFactory.make(
+            repository: repository,
+            usernameStore: usernameStore
+        )
+        let grid = AlbumGridFactory.make(
+            repository: repository,
+            usernameStore: usernameStore
+        )
 
         return MainTabBarController(
             recentViewController: recent,

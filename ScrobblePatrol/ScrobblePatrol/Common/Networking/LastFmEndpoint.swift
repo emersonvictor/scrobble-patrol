@@ -1,18 +1,18 @@
 import Foundation
 
 enum LastFmEndpoint {
-    case recentTracks(username: String, page: Int, limit: Int)
+    case recentTracks(username: String, page: Int)
     case albumInfo(artist: String, album: String)
     case topAlbums(username: String, period: TopAlbumsPeriod, page: Int, limit: Int)
 
     var queryItems: [URLQueryItem] {
         switch self {
-        case let .recentTracks(username, page, limit):
+        case let .recentTracks(username, page):
             return [
                 URLQueryItem(name: "method", value: "user.getRecentTracks"),
                 URLQueryItem(name: "user", value: username),
                 URLQueryItem(name: "page", value: String(page)),
-                URLQueryItem(name: "limit", value: String(limit))
+                URLQueryItem(name: "limit", value: "50")
             ]
         case let .albumInfo(artist, album):
             return [

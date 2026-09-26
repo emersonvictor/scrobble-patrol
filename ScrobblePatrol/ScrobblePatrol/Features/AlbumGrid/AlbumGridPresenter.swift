@@ -3,6 +3,7 @@ import Foundation
 @MainActor
 protocol AlbumGridPresenterProtocol: AnyObject {
     func attach(view: any AlbumGridViewProtocol)
+    func presentUsername(_ username: String?)
 }
 
 @MainActor
@@ -11,5 +12,9 @@ final class AlbumGridPresenter: AlbumGridPresenterProtocol {
 
     func attach(view: any AlbumGridViewProtocol) {
         self.view = view
+    }
+
+    func presentUsername(_ username: String?) {
+        view?.displayUsername(username)
     }
 }

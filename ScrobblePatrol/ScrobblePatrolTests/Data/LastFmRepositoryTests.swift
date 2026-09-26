@@ -8,15 +8,14 @@ final class LastFmRepositoryTests: XCTestCase {
         let client = LastFmAPIClientMock(result: .success(RecentTracksResponseDTO.fixture(tracks: [], page: 1, totalPages: 0)))
         let repository = LastFmRepository(apiClient: client)
 
-        await repository.getRecentTracks(username: "listener", page: 3, limit: 25) { _ in }.value
+        await repository.getRecentTracks(username: "listener", page: 3) { _ in }.value
 
         XCTAssertEqual(client.requestedEndpoints.count, 1)
         let endpoint = try XCTUnwrap(client.requestedEndpoints.first)
         switch endpoint {
-        case let .recentTracks(username, page, limit):
+        case let .recentTracks(username, page):
             XCTAssertEqual(username, "listener")
             XCTAssertEqual(page, 3)
-            XCTAssertEqual(limit, 25)
         }
     }
 
