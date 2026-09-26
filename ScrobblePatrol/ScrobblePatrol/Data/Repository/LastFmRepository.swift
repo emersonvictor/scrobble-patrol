@@ -3,7 +3,7 @@ import Foundation
 typealias RecentScrobblesCompletion = (Result<RecentScrobblesPage, LastFmError>) -> Void
 
 @MainActor
-protocol LastFmServiceProtocol {
+protocol LastFmRepositoryProtocol {
     @discardableResult
     func getRecentTracks(
         username: String,
@@ -14,11 +14,11 @@ protocol LastFmServiceProtocol {
 }
 
 @MainActor
-struct LastFmService: LastFmServiceProtocol {
-    private let client: any LastFmClientProtocol
+struct LastFmRepository: LastFmRepositoryProtocol {
+    private let apiClient: any LastFmAPIClientProtocol
 
-    init(client: any LastFmClientProtocol) {
-        self.client = client
+    init(apiClient: any LastFmAPIClientProtocol) {
+        self.apiClient = apiClient
     }
 
     @discardableResult
@@ -44,7 +44,7 @@ struct LastFmService: LastFmServiceProtocol {
     ) -> Task<Void, Never> {
         Task {
             do {
-                let response: Response = try await client.request(endpoint)
+                let response: Response = try await apiClient.request(endpoint)
                 try Task.checkCancellation()
                 let result = transform(response)
                 completion(.success(result))

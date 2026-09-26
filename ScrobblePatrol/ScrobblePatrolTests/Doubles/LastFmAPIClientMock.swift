@@ -2,7 +2,7 @@ import Foundation
 @testable import ScrobblePatrol
 
 @MainActor
-final class LastFmClientMock: LastFmClientProtocol {
+final class LastFmAPIClientMock: LastFmAPIClientProtocol {
     private let result: Result<Any, Error>
     private(set) var requestedEndpoints: [LastFmEndpoint] = []
 

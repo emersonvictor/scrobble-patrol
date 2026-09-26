@@ -3,12 +3,12 @@ import XCTest
 @testable import ScrobblePatrol
 
 @MainActor
-final class LastFmServiceTests: XCTestCase {
+final class LastFmRepositoryTests: XCTestCase {
     func testGetRecentTracksRequestsExpectedEndpoint() async throws {
-        let client = LastFmClientMock(result: .success(RecentTracksResponseDTO.fixture(tracks: [], page: 1, totalPages: 0)))
-        let service = LastFmService(client: client)
+        let client = LastFmAPIClientMock(result: .success(RecentTracksResponseDTO.fixture(tracks: [], page: 1, totalPages: 0)))
+        let repository = LastFmRepository(apiClient: client)
 
-        await service.getRecentTracks(username: "listener", page: 3, limit: 25) { _ in }.value
+        await repository.getRecentTracks(username: "listener", page: 3, limit: 25) { _ in }.value
 
         XCTAssertEqual(client.requestedEndpoints.count, 1)
         let endpoint = try XCTUnwrap(client.requestedEndpoints.first)
@@ -21,7 +21,7 @@ final class LastFmServiceTests: XCTestCase {
     }
 
     func testGetRecentTracksReturnsMappedPage() async throws {
-        let client = LastFmClientMock(result: .success(RecentTracksResponseDTO.fixture()))
+        let client = LastFmAPIClientMock(result: .success(RecentTracksResponseDTO.fixture()))
 
         let page = try await getResult(client: client).get()
 
@@ -38,7 +38,7 @@ final class LastFmServiceTests: XCTestCase {
     }
 
     func testGetRecentTracksSupportsNowPlayingWithoutOptionalFields() async throws {
-        let client = LastFmClientMock(result: .success(RecentTracksResponseDTO.fixture(
+        let client = LastFmAPIClientMock(result: .success(RecentTracksResponseDTO.fixture(
             tracks: [.fixture(
                 name: "Idioteque",
                 album: nil,
@@ -61,7 +61,7 @@ final class LastFmServiceTests: XCTestCase {
     }
 
     func testGetRecentTracksReturnsEmptyPageAsSuccess() async throws {
-        let client = LastFmClientMock(result: .success(RecentTracksResponseDTO.fixture(tracks: [], page: 1, totalPages: 0)))
+        let client = LastFmAPIClientMock(result: .success(RecentTracksResponseDTO.fixture(tracks: [], page: 1, totalPages: 0)))
 
         let page = try await getResult(client: client).get()
 
@@ -71,7 +71,7 @@ final class LastFmServiceTests: XCTestCase {
     }
 
     func testGetRecentTracksPreservesAPIError() async throws {
-        let client = LastFmClientMock(result: .failure(LastFmError.api(code: 6, message: "User not found")))
+        let client = LastFmAPIClientMock(result: .failure(LastFmError.api(code: 6, message: "User not found")))
 
         let result = try await getResult(client: client)
 
@@ -83,7 +83,7 @@ final class LastFmServiceTests: XCTestCase {
     }
 
     func testGetRecentTracksPreservesNetworkError() async throws {
-        let client = LastFmClientMock(result: .failure(LastFmError.network(URLError(.notConnectedToInternet))))
+        let client = LastFmAPIClientMock(result: .failure(LastFmError.network(URLError(.notConnectedToInternet))))
 
         let result = try await getResult(client: client)
 
@@ -95,7 +95,7 @@ final class LastFmServiceTests: XCTestCase {
 
     func testGetRecentTracksPreservesDecodingError() async throws {
         let underlying = NSError(domain: "FixtureDecoding", code: 1)
-        let client = LastFmClientMock(result: .failure(LastFmError.decoding(underlying)))
+        let client = LastFmAPIClientMock(result: .failure(LastFmError.decoding(underlying)))
 
         let result = try await getResult(client: client)
 
@@ -106,7 +106,7 @@ final class LastFmServiceTests: XCTestCase {
     }
 
     func testGetRecentTracksConvertsCancellationError() async throws {
-        let client = LastFmClientMock(result: .failure(CancellationError()))
+        let client = LastFmAPIClientMock(result: .failure(CancellationError()))
 
         let result = try await getResult(client: client)
 
@@ -116,11 +116,11 @@ final class LastFmServiceTests: XCTestCase {
     }
 
     func testCancelledTaskDoesNotDeliverSuccess() async throws {
-        let client = LastFmClientMock(result: .success(RecentTracksResponseDTO.fixture()))
-        let service = LastFmService(client: client)
+        let client = LastFmAPIClientMock(result: .success(RecentTracksResponseDTO.fixture()))
+        let repository = LastFmRepository(apiClient: client)
         var results: [Result<RecentScrobblesPage, LastFmError>] = []
 
-        let task = service.getRecentTracks(username: "listener") { results.append($0) }
+        let task = repository.getRecentTracks(username: "listener") { results.append($0) }
         task.cancel()
         await task.value
 
@@ -132,7 +132,7 @@ final class LastFmServiceTests: XCTestCase {
 
     func testGetRecentTracksWrapsUnexpectedError() async throws {
         let underlying = NSError(domain: "Unexpected", code: 42)
-        let client = LastFmClientMock(result: .failure(underlying))
+        let client = LastFmAPIClientMock(result: .failure(underlying))
 
         let result = try await getResult(client: client)
 
@@ -143,14 +143,14 @@ final class LastFmServiceTests: XCTestCase {
     }
 
     private func getResult(
-        client: LastFmClientMock,
+        client: LastFmAPIClientMock,
         file: StaticString = #filePath,
         line: UInt = #line
     ) async throws -> Result<RecentScrobblesPage, LastFmError> {
-        let service = LastFmService(client: client)
+        let repository = LastFmRepository(apiClient: client)
         var results: [Result<RecentScrobblesPage, LastFmError>] = []
 
-        await service.getRecentTracks(username: "listener") { results.append($0) }.value
+        await repository.getRecentTracks(username: "listener") { results.append($0) }.value
 
         XCTAssertEqual(results.count, 1, "Completion must run exactly once", file: file, line: line)
         return try XCTUnwrap(results.first, file: file, line: line)

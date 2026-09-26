@@ -1,18 +1,14 @@
 import Foundation
 
-protocol LastFmClientProtocol {
+protocol LastFmAPIClientProtocol {
     func request<Response: Decodable>(_ endpoint: LastFmEndpoint) async throws -> Response
 }
 
-struct LastFmClient: LastFmClientProtocol {
+struct LastFmAPIClient: LastFmAPIClientProtocol {
     private let session: URLSession
     private let baseComponents: URLComponents?
 
-    init(apiKey: String, session: URLSession = .shared) throws {
-        guard !apiKey.isEmpty else {
-            throw LastFmError.missingAPIKey
-        }
-
+    init(apiKey: String, session: URLSession = .shared) {
         self.session = session
         var components = URLComponents(string: "https://ws.audioscrobbler.com/2.0/")
         components?.queryItems = [
