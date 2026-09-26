@@ -1,10 +1,10 @@
+import SnapKit
 import UIKit
 
-final class APIErrorViewController: UIViewController {
-    private let message: String
+final class APIErrorViewController: UIViewController, ViewCode {
+    private let messageLabel = UILabel()
 
-    init(message: String) {
-        self.message = message
+    init() {
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -13,20 +13,24 @@ final class APIErrorViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupView()
+    }
 
-        let label = UILabel()
-        label.text = message
-        label.textAlignment = .center
-        label.numberOfLines = 0
-        label.translatesAutoresizingMaskIntoConstraints = false
+    func buildViewHierarchy() {
+        view.addSubview(messageLabel)
+    }
 
+    func setupConstraints() {
+        messageLabel.snp.makeConstraints { make in
+            make.leading.trailing.equalTo(view.layoutMarginsGuide)
+            make.centerY.equalToSuperview()
+        }
+    }
+
+    func setupAdditionalConfiguration() {
         view.backgroundColor = .systemBackground
-        view.addSubview(label)
-
-        NSLayoutConstraint.activate([
-            label.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
-            label.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
-            label.centerYAnchor.constraint(equalTo: view.centerYAnchor)
-        ])
+        messageLabel.text = String(localized: .apiErrorMessage)
+        messageLabel.textAlignment = .center
+        messageLabel.numberOfLines = 0
     }
 }

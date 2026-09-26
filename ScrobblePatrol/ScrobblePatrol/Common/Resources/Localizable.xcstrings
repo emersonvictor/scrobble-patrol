@@ -1,6 +1,17 @@
 {
   "sourceLanguage" : "pt-BR",
   "strings" : {
+    "apiError.message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível configurar a API do Last.fm."
+          }
+        }
+      }
+    },
     "recentScrobbles.title" : {
       "extractionState" : "manual",
       "localizations" : {
