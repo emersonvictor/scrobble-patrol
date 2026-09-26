@@ -1,6 +1,8 @@
 import Foundation
 
 typealias RecentScrobblesCompletion = (Result<RecentScrobblesPage, LastFmError>) -> Void
+typealias AlbumCompletion = (Result<Album, LastFmError>) -> Void
+typealias TopAlbumsCompletion = (Result<TopAlbumsPage, LastFmError>) -> Void
 
 @MainActor
 protocol LastFmRepositoryProtocol {
@@ -10,6 +12,22 @@ protocol LastFmRepositoryProtocol {
         page: Int,
         limit: Int,
         completion: @escaping RecentScrobblesCompletion
+    ) -> Task<Void, Never>
+
+    @discardableResult
+    func getAlbumInfo(
+        artist: String,
+        album: String,
+        completion: @escaping AlbumCompletion
+    ) -> Task<Void, Never>
+
+    @discardableResult
+    func getTopAlbums(
+        username: String,
+        period: TopAlbumsPeriod,
+        page: Int,
+        limit: Int,
+        completion: @escaping TopAlbumsCompletion
     ) -> Task<Void, Never>
 }
 
@@ -32,6 +50,43 @@ struct LastFmRepository: LastFmRepositoryProtocol {
             endpoint: .recentTracks(username: username, page: page, limit: limit),
             transform: { (response: RecentTracksResponseDTO) in
                 RecentScrobblesPage(dto: response.recenttracks)
+            },
+            completion: completion
+        )
+    }
+
+    @discardableResult
+    func getAlbumInfo(
+        artist: String,
+        album: String,
+        completion: @escaping AlbumCompletion
+    ) -> Task<Void, Never> {
+        execute(
+            endpoint: .albumInfo(artist: artist, album: album),
+            transform: { (response: AlbumInfoResponseDTO) in
+                Album(dto: response.album)
+            },
+            completion: completion
+        )
+    }
+
+    @discardableResult
+    func getTopAlbums(
+        username: String,
+        period: TopAlbumsPeriod,
+        page: Int = 1,
+        limit: Int,
+        completion: @escaping TopAlbumsCompletion
+    ) -> Task<Void, Never> {
+        execute(
+            endpoint: .topAlbums(
+                username: username,
+                period: period,
+                page: page,
+                limit: limit
+            ),
+            transform: { (response: TopAlbumsResponseDTO) in
+                TopAlbumsPage(dto: response.topalbums)
             },
             completion: completion
         )
