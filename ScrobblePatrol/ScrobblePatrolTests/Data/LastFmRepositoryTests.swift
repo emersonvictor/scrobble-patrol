@@ -16,6 +16,8 @@ final class LastFmRepositoryTests: XCTestCase {
         case let .recentTracks(username, page):
             XCTAssertEqual(username, "listener")
             XCTAssertEqual(page, 3)
+        default:
+            XCTFail("Expected the recent tracks endpoint")
         }
     }
 
