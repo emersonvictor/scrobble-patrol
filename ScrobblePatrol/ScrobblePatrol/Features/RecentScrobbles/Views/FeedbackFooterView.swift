@@ -28,7 +28,7 @@ final class FeedbackFooterView: UIView, ViewCode {
         let stackView = UIStackView(
             arrangedSubviews: [activityIndicator, messageLabel, retryButton]
         )
-        stackView.axis = .horizontal
+        stackView.axis = .vertical
         stackView.alignment = .center
         stackView.spacing = 8
         return stackView

@@ -5,6 +5,7 @@ protocol RecentScrobblesPresenterProtocol: AnyObject {
     func attach(view: any RecentScrobblesViewProtocol)
     func presentUsername(_ username: String?)
     func presentLoading()
+    func presentError(_ error: LastFmError)
     func presentScrobbles(_ scrobbles: [RecentScrobble])
     func finishRefreshing()
 }
@@ -23,6 +24,24 @@ final class RecentScrobblesPresenter: RecentScrobblesPresenterProtocol {
 
     func presentLoading() {
         view?.displayLoading()
+    }
+
+    func presentError(_ error: LastFmError) {
+        let message: String
+
+        switch error {
+        case .network:
+            message = String(localized: .requestErrorNoConnectionError)
+        case let .api(_, apiMessage):
+            message = apiMessage
+        default:
+            message = String(localized: .requestErrorDefaultError)
+        }
+
+        view?.displayError(
+            message: message,
+            retryTitle: String(localized: .requestErrorRetry)
+        )
     }
 
     func presentScrobbles(_ scrobbles: [RecentScrobble]) {

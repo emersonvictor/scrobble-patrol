@@ -7,6 +7,7 @@ protocol RecentScrobblesInteractorProtocol {
     func updateUsername(_ username: String)
     func refresh()
     func loadNextPage()
+    func retry()
 }
 
 @MainActor
@@ -85,6 +86,16 @@ final class RecentScrobblesInteractor: RecentScrobblesInteractorProtocol {
         currentPage += 1
         loadScrobbles()
     }
+
+    func retry() {
+        guard !isLoading else { return }
+
+        if scrobbles.isEmpty {
+            loadScrobbles()
+        } else {
+            loadNextPage()
+        }
+    }
 }
 
 private extension RecentScrobblesInteractor {
@@ -118,9 +129,11 @@ private extension RecentScrobblesInteractor {
                 }
 
                 presenter.presentScrobbles(scrobbles)
-            case .failure:
-                // TODO: Present the request error in the table footer.
-                break
+            case let .failure(error):
+                if currentPage > 1 {
+                    currentPage -= 1
+                }
+                presenter.presentError(error)
             }
         }
     }

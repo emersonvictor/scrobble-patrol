@@ -5,6 +5,7 @@ import UIKit
 protocol RecentScrobblesViewProtocol: AnyObject {
     func displayUsername(_ username: String?)
     func displayLoading()
+    func displayError(message: String, retryTitle: String)
     func displayScrobbles(_ scrobbles: [RecentScrobble])
     func finishRefreshing()
 }
@@ -29,6 +30,9 @@ final class RecentScrobblesViewController: UIViewController, ViewCode {
 
     private lazy var feedbackFooterView: FeedbackFooterView = {
         let footerView = FeedbackFooterView(frame: CGRect(x: 0, y: 0, width: 0, height: 56))
+        footerView.onRetry = { [weak self] in
+            self?.interactor.retry()
+        }
         return footerView
     }()
 
@@ -126,6 +130,7 @@ extension RecentScrobblesViewController: UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        guard !scrobbles.isEmpty, indexPath.row == scrobbles.count - 1 else { return }
         interactor.loadNextPage()
     }
 }
@@ -138,6 +143,11 @@ extension RecentScrobblesViewController: RecentScrobblesViewProtocol {
 
     func displayLoading() {
         feedbackFooterView.displayLoading()
+        tableView.tableFooterView = feedbackFooterView
+    }
+
+    func displayError(message: String, retryTitle: String) {
+        feedbackFooterView.displayError(message: message, retryTitle: retryTitle)
         tableView.tableFooterView = feedbackFooterView
     }
 

@@ -34,6 +34,39 @@
         }
       }
     },
+    "requestError.defaultError" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível carregar os scrobbles."
+          }
+        }
+      }
+    },
+    "requestError.noConnectionError" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifique sua conexão e tente novamente."
+          }
+        }
+      }
+    },
+    "requestError.retry" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tentar novamente"
+          }
+        }
+      }
+    },
     "tabBar.grid" : {
       "extractionState" : "manual",
       "localizations" : {
