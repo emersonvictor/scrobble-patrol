@@ -28,12 +28,12 @@ final class RecentScrobblesViewController: UIViewController, ViewCode {
         return refreshControl
     }()
 
-    private lazy var feedbackFooterView: FeedbackFooterView = {
-        let footerView = FeedbackFooterView(frame: CGRect(x: 0, y: 0, width: 0, height: 96))
-        footerView.onRetry = { [weak self] in
+    private lazy var feedbackView: FeedbackView = {
+        let feedbackView = FeedbackView(frame: CGRect(x: 0, y: 0, width: 0, height: 96))
+        feedbackView.onRetry = { [weak self] in
             self?.interactor.retry()
         }
-        return footerView
+        return feedbackView
     }()
 
     private lazy var tableView: UITableView = {
@@ -151,13 +151,13 @@ extension RecentScrobblesViewController: RecentScrobblesViewProtocol {
     }
 
     func displayLoading() {
-        feedbackFooterView.displayLoading()
-        tableView.tableFooterView = feedbackFooterView
+        feedbackView.displayLoading()
+        tableView.tableFooterView = feedbackView
     }
 
     func displayError(message: String, retryTitle: String) {
-        feedbackFooterView.displayError(message: message, retryTitle: retryTitle)
-        tableView.tableFooterView = feedbackFooterView
+        feedbackView.displayError(message: message, retryTitle: retryTitle)
+        tableView.tableFooterView = feedbackView
     }
 
     func displayScrobbles(_ scrobbles: [RecentScrobble]) {

@@ -2,7 +2,11 @@ import SnapKit
 import UIKit
 
 @MainActor
-protocol AlbumDetailViewProtocol: AnyObject {}
+protocol AlbumDetailViewProtocol: AnyObject {
+    func displayLoading()
+    func displayAlbum(_ album: Album)
+    func displayError(message: String, retryTitle: String)
+}
 
 final class AlbumDetailViewController: UIViewController, AlbumDetailViewProtocol, ViewCode {
     private let albumName: String
@@ -15,6 +19,15 @@ final class AlbumDetailViewController: UIViewController, AlbumDetailViewProtocol
     }()
 
     private lazy var contentView = UIView()
+
+    private lazy var feedbackView: FeedbackView = {
+        let feedbackView = FeedbackView()
+        feedbackView.isHidden = true
+        feedbackView.onRetry = { [weak self] in
+            self?.interactor.retry()
+        }
+        return feedbackView
+    }()
 
     private lazy var artworkContainerView = UIView()
 
@@ -53,8 +66,8 @@ final class AlbumDetailViewController: UIViewController, AlbumDetailViewProtocol
         let stackView = UIStackView()
         stackView.axis = .horizontal
         stackView.alignment = .center
-        stackView.distribution = .equalSpacing
-        stackView.spacing = 12
+        stackView.distribution = .fill
+        stackView.spacing = 16
         return stackView
     }()
 
@@ -140,10 +153,39 @@ final class AlbumDetailViewController: UIViewController, AlbumDetailViewProtocol
     override func viewDidLoad() {
         super.viewDidLoad()
         setupView()
+        interactor.viewDidLoad()
+    }
+
+    func displayLoading() {
+        scrollView.isHidden = true
+        feedbackView.displayLoading()
+    }
+
+    func displayAlbum(_ album: Album) {
+        navigationItem.title = album.name
+        artworkView.load(url: album.imageURL)
+        albumNameLabel.text = album.name
+        artistNameLabel.text = album.artistName
+        tracksCountLabel.text = "\(album.tracks.count) faixas"
+        listenersCountLabel.text = album.listeners.map {
+            "\($0.formatted(.number.notation(.compactName))) ouvintes"
+        }
+
+        configureTags(album.tags)
+        configureTracks(album.tracks)
+
+        feedbackView.hide()
+        scrollView.isHidden = false
+    }
+
+    func displayError(message: String, retryTitle: String) {
+        scrollView.isHidden = true
+        feedbackView.displayError(message: message, retryTitle: retryTitle)
     }
 
     func buildViewHierarchy() {
         view.addSubview(scrollView)
+        view.addSubview(feedbackView)
         scrollView.addSubview(contentView)
         contentView.addSubview(contentStackView)
         artworkContainerView.addSubview(artworkView)
@@ -151,7 +193,7 @@ final class AlbumDetailViewController: UIViewController, AlbumDetailViewProtocol
 
     func setupConstraints() {
         scrollView.snp.makeConstraints { make in
-            make.edges.equalTo(view.safeAreaLayoutGuide)
+            make.edges.equalTo(view.snp.edges)
         }
 
         contentView.snp.makeConstraints { make in
@@ -161,7 +203,7 @@ final class AlbumDetailViewController: UIViewController, AlbumDetailViewProtocol
 
         contentStackView.snp.makeConstraints { make in
             make.top.bottom.equalToSuperview().inset(24)
-            make.leading.trailing.equalTo(contentView.layoutMarginsGuide)
+            make.leading.trailing.equalTo(contentView.layoutMarginsGuide).inset(16)
         }
 
         artworkContainerView.snp.makeConstraints { make in
@@ -176,10 +218,92 @@ final class AlbumDetailViewController: UIViewController, AlbumDetailViewProtocol
         lastFMButton.snp.makeConstraints { make in
             make.height.equalTo(44)
         }
+
+        feedbackView.snp.makeConstraints { make in
+            make.center.equalTo(view.safeAreaLayoutGuide)
+            make.leading.trailing.equalTo(view.layoutMarginsGuide)
+            make.height.greaterThanOrEqualTo(96)
+        }
     }
 
     func setupAdditionalConfiguration() {
         navigationItem.title = albumName
         view.backgroundColor = .systemBackground
+    }
+}
+
+private extension AlbumDetailViewController {
+    func configureTags(_ tags: [String]) {
+        tagsStackView.arrangedSubviews.forEach {
+            tagsStackView.removeArrangedSubview($0)
+            $0.removeFromSuperview()
+        }
+
+        tags.prefix(3).forEach { tag in
+            tagsStackView.addArrangedSubview(makeTagView(text: tag))
+        }
+
+        tagsStackView.addArrangedSubview(UIView())
+    }
+
+    func configureTracks(_ tracks: [AlbumTrack]) {
+        tracksStackView.arrangedSubviews.forEach {
+            tracksStackView.removeArrangedSubview($0)
+            $0.removeFromSuperview()
+        }
+
+        tracks.enumerated().forEach { index, track in
+            let positionLabel = UILabel()
+            positionLabel.font = .preferredFont(forTextStyle: .body)
+            positionLabel.text = "\(index + 1)."
+            positionLabel.setContentHuggingPriority(.required, for: .horizontal)
+
+            let nameLabel = UILabel()
+            nameLabel.font = .preferredFont(forTextStyle: .body)
+            nameLabel.numberOfLines = 0
+            nameLabel.text = track.name
+
+            let durationLabel = UILabel()
+            durationLabel.font = .preferredFont(forTextStyle: .body)
+            durationLabel.textColor = .secondaryLabel
+            durationLabel.text = formattedDuration(track.duration)
+            durationLabel.setContentHuggingPriority(.required, for: .horizontal)
+
+            let stackView = UIStackView(arrangedSubviews: [positionLabel, nameLabel, durationLabel])
+            stackView.axis = .horizontal
+            stackView.alignment = .firstBaseline
+            stackView.spacing = 8
+            tracksStackView.addArrangedSubview(stackView)
+        }
+    }
+
+    func formattedDuration(_ duration: TimeInterval?) -> String? {
+        guard let duration else { return "-" }
+        let totalSeconds = Int(duration)
+        return String(format: "%d:%02d", totalSeconds / 60, totalSeconds % 60)
+    }
+
+    func makeTagView(text: String) -> UIView {
+        let label = UILabel()
+        label.font = .preferredFont(forTextStyle: .subheadline)
+        label.textColor = .secondaryLabel
+        label.text = text
+
+        let containerView = UIView()
+        containerView.layer.borderColor = UIColor.separator.cgColor
+        containerView.layer.borderWidth = 1
+        containerView.layer.cornerRadius = 16
+        containerView.addSubview(label)
+
+        containerView.snp.makeConstraints { make in
+            make.height.equalTo(32)
+        }
+
+        label.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(12)
+            make.centerY.equalToSuperview()
+        }
+
+        return containerView
     }
 }

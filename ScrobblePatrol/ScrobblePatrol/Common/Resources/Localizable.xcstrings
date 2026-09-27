@@ -1,6 +1,17 @@
 {
   "sourceLanguage" : "pt-BR",
   "strings" : {
+    "albumDetail.loadError" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível carregar o álbum."
+          }
+        }
+      }
+    },
     "albumDetail.openLastFM" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -34,6 +45,17 @@
         }
       }
     },
+    "recentScrobbles.loadError" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível carregar os scrobbles."
+          }
+        }
+      }
+    },
     "recentScrobbles.nowPlaying" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -52,17 +74,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Últimos scrobbles"
-          }
-        }
-      }
-    },
-    "requestError.defaultError" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Não foi possível carregar os scrobbles."
           }
         }
       }

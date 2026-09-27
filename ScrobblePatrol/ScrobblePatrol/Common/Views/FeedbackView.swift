@@ -1,7 +1,7 @@
 import SnapKit
 import UIKit
 
-final class FeedbackFooterView: UIView, ViewCode {
+final class FeedbackView: UIView, ViewCode {
     var onRetry: (() -> Void)?
 
     private lazy var activityIndicator: UIActivityIndicatorView = {
@@ -14,6 +14,7 @@ final class FeedbackFooterView: UIView, ViewCode {
         let label = UILabel()
         label.font = .preferredFont(forTextStyle: .footnote)
         label.textColor = .secondaryLabel
+        label.textAlignment = .center
         label.numberOfLines = 2
         return label
     }()
@@ -43,6 +44,7 @@ final class FeedbackFooterView: UIView, ViewCode {
     required init?(coder: NSCoder) { nil }
 
     func displayLoading() {
+        isHidden = false
         messageLabel.isHidden = true
         retryButton.isHidden = true
         activityIndicator.isHidden = false
@@ -50,12 +52,18 @@ final class FeedbackFooterView: UIView, ViewCode {
     }
 
     func displayError(message: String, retryTitle: String) {
+        isHidden = false
         activityIndicator.stopAnimating()
         activityIndicator.isHidden = true
         messageLabel.text = message
         messageLabel.isHidden = false
         retryButton.setTitle(retryTitle, for: .normal)
         retryButton.isHidden = false
+    }
+
+    func hide() {
+        activityIndicator.stopAnimating()
+        isHidden = true
     }
 
     func buildViewHierarchy() {

@@ -39,5 +39,23 @@ struct AlbumInfoDTO: Decodable {
     struct TrackDTO: Decodable {
         let name: String
         let duration: String?
+
+        private enum CodingKeys: String, CodingKey {
+            case name
+            case duration
+        }
+
+        init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            name = try container.decode(String.self, forKey: .name)
+
+            if let stringDuration = try? container.decode(String.self, forKey: .duration) {
+                duration = stringDuration
+            } else if let integerDuration = try? container.decode(Int.self, forKey: .duration) {
+                duration = String(integerDuration)
+            } else {
+                duration = nil
+            }
+        }
     }
 }

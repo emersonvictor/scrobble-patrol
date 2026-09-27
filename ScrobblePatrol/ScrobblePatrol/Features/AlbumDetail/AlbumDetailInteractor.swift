@@ -3,6 +3,7 @@ import Foundation
 @MainActor
 protocol AlbumDetailInteractorProtocol {
     func viewDidLoad()
+    func retry()
 }
 
 @MainActor
@@ -24,5 +25,29 @@ final class AlbumDetailInteractor: AlbumDetailInteractorProtocol {
         self.repository = repository
     }
 
-    func viewDidLoad() {}
+    func viewDidLoad() {
+        loadAlbum()
+    }
+
+    func retry() {
+        loadAlbum()
+    }
+}
+
+private extension AlbumDetailInteractor {
+    func loadAlbum() {
+        presenter.presentLoading()
+
+        repository.getAlbumInfo(artist: artistName, album: albumName) { [weak self] result in
+            guard let self else { return }
+
+            switch result {
+            case let .success(album):
+                presenter.presentAlbum(album)
+            case let .failure(error):
+                debugPrint(error)
+                presenter.presentError(error)
+            }
+        }
+    }
 }

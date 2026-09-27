@@ -35,7 +35,7 @@ final class RecentScrobblesPresenter: RecentScrobblesPresenterProtocol {
         case let .api(_, apiMessage):
             message = apiMessage
         default:
-            message = String(localized: .requestErrorDefaultError)
+            message = String(localized: .recentScrobblesLoadError)
         }
 
         view?.displayError(
