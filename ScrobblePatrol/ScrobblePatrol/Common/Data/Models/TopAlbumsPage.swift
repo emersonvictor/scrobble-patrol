@@ -4,7 +4,7 @@ struct TopAlbumsPage: Equatable {
     let totalPages: Int
 
     init(dto: TopAlbumsDTO) {
-        albums = dto.album.map(TopAlbum.init)
+        albums = dto.album.map { TopAlbum(dto: $0) }
         page = dto.attributes.page
         totalPages = dto.attributes.totalPages
     }

@@ -21,12 +21,12 @@ final class MainTabBarController: UITabBarController {
 
         let recentNavigation = UINavigationController(rootViewController: recentViewController)
         recentNavigation.tabBarItem = UITabBarItem(
-            title: "Recentes", image: UIImage(systemName: "clock"), tag: 0
+            title: String(localized: .tabBarRecentScrobbles), image: UIImage(systemName: "clock"), tag: 0
         )
 
         let albumGridNavigation = UINavigationController(rootViewController: albumGridViewController)
         albumGridNavigation.tabBarItem = UITabBarItem(
-            title: "Semaninha", image: UIImage(systemName: "square.grid.3x3"), tag: 1
+            title: String(localized: .tabBarGrid), image: UIImage(systemName: "square.grid.3x3"), tag: 1
         )
 
         setViewControllers([recentNavigation, albumGridNavigation], animated: false)

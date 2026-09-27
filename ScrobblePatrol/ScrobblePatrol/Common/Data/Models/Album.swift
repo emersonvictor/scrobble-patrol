@@ -15,7 +15,7 @@ struct Album: Equatable {
         artistName = dto.artist
         imageURL = Self.imageURL(from: dto.image ?? [])
         tags = dto.tags?.tag.map(\.name) ?? []
-        tracks = dto.tracks?.track.map(AlbumTrack.init) ?? []
+        tracks = dto.tracks?.track.map { AlbumTrack(dto: $0) } ?? []
         listeners = dto.listeners.flatMap(Int.init)
         playcount = dto.playcount.flatMap(Int.init)
         lastFMURL = dto.url.flatMap(URL.init(string:))

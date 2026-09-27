@@ -1,10 +1,10 @@
-import Combine
 import Foundation
 
 @MainActor
 protocol RecentScrobblesInteractorProtocol {
     func viewDidLoad()
-    func updateUser(username: String)
+    func updateUsername(_ username: String)
+    func refresh()
     func loadNextPage()
 }
 
@@ -13,13 +13,11 @@ final class RecentScrobblesInteractor: RecentScrobblesInteractorProtocol {
     private let presenter: any RecentScrobblesPresenterProtocol
     private let repository: any LastFmRepositoryProtocol
     private let usernameStore: any UsernameStoreProtocol
-    private var currentPage = 1
-    private var totalPages = 1
     private var currentUsername: String?
+    private var currentPage = 1
+    private var hasNextPage = false
     private var isLoading = false
-    private var requestGeneration = 0
-    private var cancellables = Set<AnyCancellable>()
-    private var requestTask: Task<Void, Never>?
+    private var scrobbles: [RecentScrobble] = []
 
     init(
         presenter: any RecentScrobblesPresenterProtocol,
@@ -32,79 +30,80 @@ final class RecentScrobblesInteractor: RecentScrobblesInteractorProtocol {
     }
 
     func viewDidLoad() {
-        cancellables.removeAll()
-        usernameStore.usernamePublisher
-            .sink { [weak self] username in
-                self?.usernameDidChange(username)
-            }
-            .store(in: &cancellables)
+        currentUsername = usernameStore.username
+        presenter.presentUsername(currentUsername)
+        loadScrobbles()
     }
-    
-    func updateUser(username: String) {
+
+    func updateUsername(_ username: String) {
+        guard !isLoading else { return }
+
         usernameStore.update(username)
-    }
-
-    func loadNextPage() {
-        guard
-            currentUsername != nil,
-            !isLoading,
-            currentPage < totalPages
-        else { return }
-
-        currentPage += 1
-        loadCurrentPage(appending: true)
-    }
-
-    
-}
-
-private extension RecentScrobblesInteractor {
-    func usernameDidChange(_ username: String?) {
-        requestGeneration += 1
-        requestTask?.cancel()
-        requestTask = nil
-        isLoading = false
+        currentUsername = usernameStore.username
         currentPage = 1
-        totalPages = 1
-        currentUsername = username
-        presenter.presentUsername(username)
+        hasNextPage = false
+        scrobbles = []
 
-        guard let username else {
-            presenter.presentScrobbles([], appending: false)
+        presenter.presentUsername(currentUsername)
+        presenter.presentScrobbles(scrobbles)
+        loadScrobbles()
+    }
+
+    func refresh() {
+        guard !isLoading, currentUsername != nil else {
+            presenter.finishRefreshing()
             return
         }
 
-        currentUsername = username
-        loadCurrentPage(appending: false)
+        currentPage = 1
+        hasNextPage = false
+        scrobbles = []
+        presenter.presentScrobbles(scrobbles)
+        loadScrobbles(isRefreshing: true)
     }
 
-    func loadCurrentPage(appending: Bool) {
-        guard let username = currentUsername, !isLoading else { return }
+    func loadNextPage() {
+        guard hasNextPage, !isLoading else { return }
 
-        let requestedPage = currentPage
-        let generation = requestGeneration
+        currentPage += 1
+        loadScrobbles()
+    }
+}
+
+private extension RecentScrobblesInteractor {
+    func loadScrobbles(isRefreshing: Bool = false) {
+        guard let currentUsername, !isLoading else { return }
+
         isLoading = true
-        requestTask = repository.getRecentTracks(
-            username: username,
-            page: requestedPage
-        ) { [weak self] result in
-            guard
-                let self,
-                requestGeneration == generation,
-                currentUsername == username,
-                currentPage == requestedPage
-            else { return }
+        if !isRefreshing {
+            presenter.presentLoading()
+        }
 
+        repository.getRecentTracks(
+            username: currentUsername,
+            page: currentPage
+        ) { [weak self] result in
+            guard let self else { return }
             isLoading = false
+
+            if isRefreshing {
+                presenter.finishRefreshing()
+            }
 
             switch result {
             case let .success(page):
-                totalPages = page.totalPages
-                presenter.presentScrobbles(page.scrobbles, appending: appending)
-            case .failure:
-                if appending {
-                    currentPage -= 1
+                hasNextPage = page.page < page.totalPages
+
+                if currentPage == 1 {
+                    scrobbles = page.scrobbles
+                } else {
+                    scrobbles.append(contentsOf: page.scrobbles)
                 }
+
+                presenter.presentScrobbles(scrobbles)
+            case .failure:
+                // TODO: Present the request error.
+                break
             }
         }
     }

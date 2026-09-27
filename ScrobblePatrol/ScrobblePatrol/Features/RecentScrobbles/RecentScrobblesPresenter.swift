@@ -4,7 +4,9 @@ import Foundation
 protocol RecentScrobblesPresenterProtocol: AnyObject {
     func attach(view: any RecentScrobblesViewProtocol)
     func presentUsername(_ username: String?)
-    func presentScrobbles(_ scrobbles: [RecentScrobble], appending: Bool)
+    func presentLoading()
+    func presentScrobbles(_ scrobbles: [RecentScrobble])
+    func finishRefreshing()
 }
 
 @MainActor
@@ -19,7 +21,13 @@ final class RecentScrobblesPresenter: RecentScrobblesPresenterProtocol {
         view?.displayUsername(username)
     }
 
-    func presentScrobbles(_ scrobbles: [RecentScrobble], appending: Bool) {
-        view?.displayScrobbles(scrobbles, appending: appending)
+    func presentLoading() {}
+
+    func presentScrobbles(_ scrobbles: [RecentScrobble]) {
+        view?.displayScrobbles(scrobbles)
+    }
+
+    func finishRefreshing() {
+        view?.finishRefreshing()
     }
 }

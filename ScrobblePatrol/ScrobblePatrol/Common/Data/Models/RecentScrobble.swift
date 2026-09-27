@@ -8,6 +8,16 @@ struct RecentScrobble: Equatable {
     let playedAt: Date?
     let isNowPlaying: Bool
 
+    var formattedPlayedAt: String? {
+        guard !isNowPlaying, let playedAt else { return nil }
+
+        return playedAt.formatted(
+            .dateTime
+                .hour(.twoDigits(amPM: .omitted))
+                .minute(.twoDigits)
+        )
+    }
+
     init(dto: RecentTrackDTO) {
         let sizes = ["mega", "extralarge", "large", "medium", "small"]
         let images = dto.image ?? []

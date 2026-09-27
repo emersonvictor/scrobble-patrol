@@ -4,16 +4,22 @@ import UIKit
 @MainActor
 protocol RecentScrobblesViewProtocol: AnyObject {
     func displayUsername(_ username: String?)
-    func displayScrobbles(_ scrobbles: [RecentScrobble], appending: Bool)
+    func displayScrobbles(_ scrobbles: [RecentScrobble])
+    func finishRefreshing()
 }
 
-final class RecentScrobblesViewController: UIViewController, RecentScrobblesViewProtocol {
+final class RecentScrobblesViewController: UIViewController, ViewCode {
     private let interactor: any RecentScrobblesInteractorProtocol
     private let albumDetailRouter: AlbumDetailRouter
     
     private lazy var usernameView = UsernameView()
     private lazy var tableView = UITableView(frame: .zero, style: .plain)
-    private var scrobbles: [RecentScrobble] = []
+    private lazy var refreshControl = UIRefreshControl()
+    private var scrobbles: [RecentScrobble] = [] {
+        didSet {
+            tableView.reloadData()
+        }
+    }
 
     init(interactor: any RecentScrobblesInteractorProtocol, albumDetailRouter: AlbumDetailRouter) {
         self.interactor = interactor
@@ -26,35 +32,16 @@ final class RecentScrobblesViewController: UIViewController, RecentScrobblesView
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = String(localized: .recentScrobblesTitle)
-        view.backgroundColor = .systemBackground
         setupView()
         interactor.viewDidLoad()
     }
 
-    func displayUsername(_ username: String?) {
-        usernameView.setUsername(username ?? "")
-    }
-
-    func displayScrobbles(_ scrobbles: [RecentScrobble], appending: Bool) {
-        if appending {
-            self.scrobbles.append(contentsOf: scrobbles)
-        } else {
-            self.scrobbles = scrobbles
-        }
-        tableView.reloadData()
-    }
-
-    private func setupView() {
+    func buildViewHierarchy() {
         view.addSubview(usernameView)
         view.addSubview(tableView)
+    }
 
-        usernameView.onSubmit = { [weak self] username in
-            self?.interactor.updateUser(username: username)
-        }
-        tableView.dataSource = self
-        tableView.delegate = self
-
+    func setupConstraints() {
         usernameView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide).offset(16)
             make.leading.trailing.equalTo(view.layoutMarginsGuide)
@@ -65,28 +52,74 @@ final class RecentScrobblesViewController: UIViewController, RecentScrobblesView
             make.leading.trailing.bottom.equalToSuperview()
         }
     }
-}
 
-extension RecentScrobblesViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        guard indexPath.row == scrobbles.count - 1 else { return }
-        interactor.loadNextPage()
+    func setupAdditionalConfiguration() {
+        navigationItem.title = String(localized: .recentScrobblesTitle)
+        view.backgroundColor = .systemBackground
+
+        usernameView.onSubmit = { [weak self] username in
+            self?.interactor.updateUsername(username)
+        }
+        refreshControl.addTarget(self, action: #selector(refresh), for: .valueChanged)
+        tableView.refreshControl = refreshControl
+        tableView.dataSource = self
+        tableView.delegate = self
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedRowHeight = 112
+        tableView.register(
+            RecentScrobbleCell.self,
+            forCellReuseIdentifier: RecentScrobbleCell.reuseIdentifier
+        )
+    }
+
+    @objc private func refresh() {
+        interactor.refresh()
     }
 }
 
+// MARK: - UITableViewDataSource
 extension RecentScrobblesViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         scrobbles.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let identifier = "RecentScrobbleCell"
-        let cell = tableView.dequeueReusableCell(withIdentifier: identifier)
-            ?? UITableViewCell(style: .subtitle, reuseIdentifier: identifier)
-        let scrobble = scrobbles[indexPath.row]
-        cell.textLabel?.text = scrobble.trackName
-        cell.detailTextLabel?.text = scrobble.artistName
-        cell.accessoryType = scrobble.albumName == nil ? .none : .disclosureIndicator
+        guard
+            let cell = tableView.dequeueReusableCell(
+                withIdentifier: RecentScrobbleCell.reuseIdentifier,
+                for: indexPath
+            ) as? RecentScrobbleCell
+        else {
+            return UITableViewCell()
+        }
+
+        cell.configure(with: scrobbles[indexPath.row])
         return cell
+    }
+}
+
+// MARK: - UITableViewDelegate
+extension RecentScrobblesViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        // TODO: Route to the selected album details.
+    }
+
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        interactor.loadNextPage()
+    }
+}
+
+// MARK: - RecentScrobblesViewProtocol
+extension RecentScrobblesViewController: RecentScrobblesViewProtocol {
+    func displayUsername(_ username: String?) {
+        usernameView.setUsername(username ?? "")
+    }
+
+    func displayScrobbles(_ scrobbles: [RecentScrobble]) {
+        self.scrobbles = scrobbles
+    }
+
+    func finishRefreshing() {
+        refreshControl.endRefreshing()
     }
 }

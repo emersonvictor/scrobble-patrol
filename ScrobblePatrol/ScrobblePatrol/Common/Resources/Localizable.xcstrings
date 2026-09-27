@@ -12,6 +12,17 @@
         }
       }
     },
+    "recentScrobbles.nowPlaying" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tocando agora"
+          }
+        }
+      }
+    },
     "recentScrobbles.title" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -19,6 +30,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Últimos scrobbles"
+          }
+        }
+      }
+    },
+    "tabBar.grid" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semaninha"
+          }
+        }
+      }
+    },
+    "tabBar.recentScrobbles" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recentes"
           }
         }
       }

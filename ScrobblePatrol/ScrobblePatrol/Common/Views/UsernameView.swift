@@ -11,6 +11,11 @@ final class UsernameView: UIView, ViewCode {
         textField.clearButtonMode = .whileEditing
         textField.placeholder = String(localized: .usernamePlaceholder)
         textField.returnKeyType = .done
+        textField.backgroundColor = .secondarySystemBackground
+        textField.layer.cornerRadius = 10
+        textField.clipsToBounds = true
+        textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 1))
+        textField.leftViewMode = .always
         return textField
     }()
 
@@ -46,8 +51,6 @@ final class UsernameView: UIView, ViewCode {
         confirmButton.snp.makeConstraints { make in
             make.leading.equalTo(textField.snp.trailing).offset(8)
             make.trailing.top.bottom.equalToSuperview()
-            make.width.equalTo(56)
-            make.height.equalTo(44)
         }
     }
 
