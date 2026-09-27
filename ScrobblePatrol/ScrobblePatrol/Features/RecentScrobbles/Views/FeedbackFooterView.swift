@@ -1,7 +1,7 @@
 import SnapKit
 import UIKit
 
-final class PaginationFooterView: UIView, ViewCode {
+final class FeedbackFooterView: UIView, ViewCode {
     var onRetry: (() -> Void)?
 
     private lazy var activityIndicator: UIActivityIndicatorView = {

@@ -3,6 +3,7 @@ import Foundation
 @MainActor
 protocol RecentScrobblesInteractorProtocol {
     func viewDidLoad()
+    func viewWillAppear()
     func updateUsername(_ username: String)
     func refresh()
     func loadNextPage()
@@ -32,6 +33,22 @@ final class RecentScrobblesInteractor: RecentScrobblesInteractorProtocol {
     func viewDidLoad() {
         currentUsername = usernameStore.username
         presenter.presentUsername(currentUsername)
+        loadScrobbles()
+    }
+
+    func viewWillAppear() {
+        let storedUsername = usernameStore.username
+        guard storedUsername != currentUsername else { return }
+
+        currentUsername = storedUsername
+        currentPage = 1
+        hasNextPage = false
+        scrobbles = []
+
+        presenter.presentUsername(currentUsername)
+        presenter.presentScrobbles(scrobbles)
+
+        guard !isLoading else { return }
         loadScrobbles()
     }
 
@@ -102,7 +119,7 @@ private extension RecentScrobblesInteractor {
 
                 presenter.presentScrobbles(scrobbles)
             case .failure:
-                // TODO: Present the request error.
+                // TODO: Present the request error in the table footer.
                 break
             }
         }

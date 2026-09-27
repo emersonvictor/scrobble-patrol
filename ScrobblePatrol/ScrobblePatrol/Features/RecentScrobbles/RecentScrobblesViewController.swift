@@ -4,6 +4,7 @@ import UIKit
 @MainActor
 protocol RecentScrobblesViewProtocol: AnyObject {
     func displayUsername(_ username: String?)
+    func displayLoading()
     func displayScrobbles(_ scrobbles: [RecentScrobble])
     func finishRefreshing()
 }
@@ -24,6 +25,11 @@ final class RecentScrobblesViewController: UIViewController, ViewCode {
         let refreshControl = UIRefreshControl()
         refreshControl.addTarget(self, action: #selector(refresh), for: .valueChanged)
         return refreshControl
+    }()
+
+    private lazy var feedbackFooterView: FeedbackFooterView = {
+        let footerView = FeedbackFooterView(frame: CGRect(x: 0, y: 0, width: 0, height: 56))
+        return footerView
     }()
 
     private lazy var tableView: UITableView = {
@@ -58,6 +64,11 @@ final class RecentScrobblesViewController: UIViewController, ViewCode {
         super.viewDidLoad()
         setupView()
         interactor.viewDidLoad()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        interactor.viewWillAppear()
     }
 
     func buildViewHierarchy() {
@@ -125,7 +136,14 @@ extension RecentScrobblesViewController: RecentScrobblesViewProtocol {
         usernameView.setUsername(username ?? "")
     }
 
+    func displayLoading() {
+        feedbackFooterView.displayLoading()
+        tableView.tableFooterView = feedbackFooterView
+    }
+
     func displayScrobbles(_ scrobbles: [RecentScrobble]) {
+        tableView.backgroundView = nil
+        tableView.tableFooterView = nil
         self.scrobbles = scrobbles
     }
 

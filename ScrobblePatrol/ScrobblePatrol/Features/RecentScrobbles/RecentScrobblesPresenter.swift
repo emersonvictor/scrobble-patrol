@@ -21,7 +21,9 @@ final class RecentScrobblesPresenter: RecentScrobblesPresenterProtocol {
         view?.displayUsername(username)
     }
 
-    func presentLoading() {}
+    func presentLoading() {
+        view?.displayLoading()
+    }
 
     func presentScrobbles(_ scrobbles: [RecentScrobble]) {
         view?.displayScrobbles(scrobbles)
