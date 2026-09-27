@@ -12,9 +12,33 @@ final class RecentScrobblesViewController: UIViewController, ViewCode {
     private let interactor: any RecentScrobblesInteractorProtocol
     private let albumDetailRouter: AlbumDetailRouter
     
-    private lazy var usernameView = UsernameView()
-    private lazy var tableView = UITableView(frame: .zero, style: .plain)
-    private lazy var refreshControl = UIRefreshControl()
+    private lazy var usernameView: UsernameView = {
+        let usernameView = UsernameView()
+        usernameView.onSubmit = { [weak self] username in
+            self?.interactor.updateUsername(username)
+        }
+        return usernameView
+    }()
+
+    private lazy var refreshControl: UIRefreshControl = {
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(refresh), for: .valueChanged)
+        return refreshControl
+    }()
+
+    private lazy var tableView: UITableView = {
+        let tableView = UITableView(frame: .zero, style: .plain)
+        tableView.refreshControl = refreshControl
+        tableView.dataSource = self
+        tableView.delegate = self
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedRowHeight = 112
+        tableView.register(
+            RecentScrobbleCell.self,
+            forCellReuseIdentifier: RecentScrobbleCell.reuseIdentifier
+        )
+        return tableView
+    }()
     private var scrobbles: [RecentScrobble] = [] {
         didSet {
             tableView.reloadData()
@@ -56,20 +80,6 @@ final class RecentScrobblesViewController: UIViewController, ViewCode {
     func setupAdditionalConfiguration() {
         navigationItem.title = String(localized: .recentScrobblesTitle)
         view.backgroundColor = .systemBackground
-
-        usernameView.onSubmit = { [weak self] username in
-            self?.interactor.updateUsername(username)
-        }
-        refreshControl.addTarget(self, action: #selector(refresh), for: .valueChanged)
-        tableView.refreshControl = refreshControl
-        tableView.dataSource = self
-        tableView.delegate = self
-        tableView.rowHeight = UITableView.automaticDimension
-        tableView.estimatedRowHeight = 112
-        tableView.register(
-            RecentScrobbleCell.self,
-            forCellReuseIdentifier: RecentScrobbleCell.reuseIdentifier
-        )
     }
 
     @objc private func refresh() {

@@ -4,7 +4,7 @@ import UIKit
 final class UsernameView: UIView, ViewCode {
     var onSubmit: ((String) -> Void)?
 
-    private let textField: UITextField = {
+    private lazy var textField: UITextField = {
         let textField = UITextField()
         textField.autocapitalizationType = .none
         textField.autocorrectionType = .no
@@ -16,13 +16,15 @@ final class UsernameView: UIView, ViewCode {
         textField.clipsToBounds = true
         textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 1))
         textField.leftViewMode = .always
+        textField.delegate = self
         return textField
     }()
 
-    private let confirmButton: UIButton = {
+    private lazy var confirmButton: UIButton = {
         var configuration = UIButton.Configuration.filled()
         configuration.title = String(localized: .usernameConfirm)
         let button = UIButton(configuration: configuration)
+        button.addTarget(self, action: #selector(submit), for: .touchUpInside)
         return button
     }()
 
@@ -52,11 +54,6 @@ final class UsernameView: UIView, ViewCode {
             make.leading.equalTo(textField.snp.trailing).offset(8)
             make.trailing.top.bottom.equalToSuperview()
         }
-    }
-
-    func setupAdditionalConfiguration() {
-        textField.delegate = self
-        confirmButton.addTarget(self, action: #selector(submit), for: .touchUpInside)
     }
 
     @objc private func submit() {

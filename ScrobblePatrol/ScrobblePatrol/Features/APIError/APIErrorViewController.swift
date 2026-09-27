@@ -2,7 +2,13 @@ import SnapKit
 import UIKit
 
 final class APIErrorViewController: UIViewController, ViewCode {
-    private let messageLabel = UILabel()
+    private lazy var messageLabel: UILabel = {
+        let label = UILabel()
+        label.text = String(localized: .apiErrorMessage)
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        return label
+    }()
 
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -29,8 +35,5 @@ final class APIErrorViewController: UIViewController, ViewCode {
 
     func setupAdditionalConfiguration() {
         view.backgroundColor = .systemBackground
-        messageLabel.text = String(localized: .apiErrorMessage)
-        messageLabel.textAlignment = .center
-        messageLabel.numberOfLines = 0
     }
 }

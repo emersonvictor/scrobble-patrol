@@ -4,16 +4,65 @@ import UIKit
 final class RecentScrobbleCell: UITableViewCell, ViewCode {
     static let reuseIdentifier = String(describing: RecentScrobbleCell.self)
 
-    private lazy var artworkView = AlbumArtworkView()
-    private lazy var trackLabel = UILabel()
-    private lazy var artistLabel = UILabel()
-    private lazy var albumLabel = UILabel()
-    private lazy var timeLabel = UILabel()
-    private lazy var nowPlayingImageView = UIImageView(image: UIImage(systemName: "chart.bar.fill"))
-    private lazy var nowPlayingLabel = UILabel()
-    private lazy var nowPlayingStackView = UIStackView(
-        arrangedSubviews: [nowPlayingImageView, nowPlayingLabel]
-    )
+    private lazy var artworkView: AlbumArtworkView = {
+        let artworkView = AlbumArtworkView()
+        artworkView.layer.cornerRadius = 8
+        return artworkView
+    }()
+
+    private lazy var trackLabel: UILabel = {
+        let label = UILabel()
+        label.font = .preferredFont(forTextStyle: .headline)
+        label.numberOfLines = 1
+        return label
+    }()
+
+    private lazy var artistLabel: UILabel = {
+        let label = UILabel()
+        label.font = .preferredFont(forTextStyle: .subheadline)
+        label.textColor = .secondaryLabel
+        label.numberOfLines = 1
+        return label
+    }()
+
+    private lazy var albumLabel: UILabel = {
+        let label = UILabel()
+        label.font = .preferredFont(forTextStyle: .subheadline)
+        label.textColor = .secondaryLabel
+        label.numberOfLines = 1
+        return label
+    }()
+
+    private lazy var timeLabel: UILabel = {
+        let label = UILabel()
+        label.font = .preferredFont(forTextStyle: .caption1)
+        label.textColor = .secondaryLabel
+        return label
+    }()
+
+    private lazy var nowPlayingImageView: UIImageView = {
+        let imageView = UIImageView(image: UIImage(systemName: "chart.bar.fill"))
+        imageView.contentMode = .scaleAspectFit
+        imageView.tintColor = .secondaryLabel
+        return imageView
+    }()
+
+    private lazy var nowPlayingLabel: UILabel = {
+        let label = UILabel()
+        label.font = .preferredFont(forTextStyle: .caption1)
+        label.textColor = .secondaryLabel
+        label.text = String(localized: .recentScrobblesNowPlaying)
+        return label
+    }()
+
+    private lazy var nowPlayingStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [nowPlayingImageView, nowPlayingLabel])
+        stackView.axis = .horizontal
+        stackView.alignment = .center
+        stackView.spacing = 6
+        stackView.isHidden = true
+        return stackView
+    }()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -91,33 +140,4 @@ final class RecentScrobbleCell: UITableViewCell, ViewCode {
         }
     }
 
-    func setupAdditionalConfiguration() {
-        artworkView.layer.cornerRadius = 8
-
-        trackLabel.font = .preferredFont(forTextStyle: .headline)
-        trackLabel.numberOfLines = 1
-
-        artistLabel.font = .preferredFont(forTextStyle: .subheadline)
-        artistLabel.textColor = .secondaryLabel
-        artistLabel.numberOfLines = 1
-
-        albumLabel.font = .preferredFont(forTextStyle: .subheadline)
-        albumLabel.textColor = .secondaryLabel
-        albumLabel.numberOfLines = 1
-
-        timeLabel.font = .preferredFont(forTextStyle: .caption1)
-        timeLabel.textColor = .secondaryLabel
-
-        nowPlayingStackView.axis = .horizontal
-        nowPlayingStackView.alignment = .center
-        nowPlayingStackView.spacing = 6
-        nowPlayingStackView.isHidden = true
-
-        nowPlayingImageView.contentMode = .scaleAspectFit
-        nowPlayingImageView.tintColor = .secondaryLabel
-
-        nowPlayingLabel.font = .preferredFont(forTextStyle: .caption1)
-        nowPlayingLabel.textColor = .secondaryLabel
-        nowPlayingLabel.text = String(localized: .recentScrobblesNowPlaying)
-    }
 }

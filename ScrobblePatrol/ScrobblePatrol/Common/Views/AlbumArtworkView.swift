@@ -4,8 +4,14 @@ import UIKit
 @MainActor
 final class AlbumArtworkView: UIView, ViewCode {
     private let imageLoader: any ImageLoading
-    private let imageView = UIImageView()
     private let placeholder = UIImage(systemName: "music.note")
+    private lazy var imageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFill
+        imageView.image = placeholder
+        imageView.tintColor = .secondaryLabel
+        return imageView
+    }()
     private var imageTask: Task<Void, Never>?
     private var representedURL: URL?
 
@@ -65,9 +71,6 @@ final class AlbumArtworkView: UIView, ViewCode {
     func setupAdditionalConfiguration() {
         backgroundColor = .secondarySystemBackground
         clipsToBounds = true
-        imageView.contentMode = .scaleAspectFill
-        imageView.image = placeholder
-        imageView.tintColor = .secondaryLabel
     }
 
     deinit {

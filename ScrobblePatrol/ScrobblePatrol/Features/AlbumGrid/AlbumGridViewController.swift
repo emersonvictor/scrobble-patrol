@@ -9,7 +9,13 @@ protocol AlbumGridViewProtocol: AnyObject {
 final class AlbumGridViewController: UIViewController, AlbumGridViewProtocol, ViewCode {
     private let interactor: any AlbumGridInteractorProtocol
     private let albumDetailRouter: AlbumDetailRouter
-    private let usernameView = UsernameView()
+    private lazy var usernameView: UsernameView = {
+        let usernameView = UsernameView()
+        usernameView.onSubmit = { [weak self] username in
+            self?.interactor.updateUser(username: username)
+        }
+        return usernameView
+    }()
 
     init(interactor: any AlbumGridInteractorProtocol, albumDetailRouter: AlbumDetailRouter) {
         self.interactor = interactor
@@ -22,7 +28,6 @@ final class AlbumGridViewController: UIViewController, AlbumGridViewProtocol, Vi
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Semaninha"
         setupView()
         interactor.viewDidLoad()
     }
@@ -43,9 +48,7 @@ final class AlbumGridViewController: UIViewController, AlbumGridViewProtocol, Vi
     }
 
     func setupAdditionalConfiguration() {
+        title = "Semaninha"
         view.backgroundColor = .systemBackground
-        usernameView.onSubmit = { [weak self] username in
-            self?.interactor.updateUser(username: username)
-        }
     }
 }
