@@ -14,7 +14,10 @@ enum AlbumDetailFactory {
             presenter: presenter,
             repository: repository
         )
-        let viewController = AlbumDetailViewController(interactor: interactor)
+        let viewController = AlbumDetailViewController(
+            albumName: albumName,
+            interactor: interactor
+        )
         presenter.attach(view: viewController)
         return viewController
     }

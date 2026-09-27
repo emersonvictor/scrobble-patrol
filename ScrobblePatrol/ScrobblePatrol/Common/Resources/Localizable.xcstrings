@@ -1,6 +1,28 @@
 {
   "sourceLanguage" : "pt-BR",
   "strings" : {
+    "albumDetail.openLastFM" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver no LastFM"
+          }
+        }
+      }
+    },
+    "albumDetail.tracklist" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faixas"
+          }
+        }
+      }
+    },
     "apiError.message" : {
       "extractionState" : "manual",
       "localizations" : {

@@ -126,7 +126,16 @@ extension RecentScrobblesViewController: UITableViewDataSource {
 // MARK: - UITableViewDelegate
 extension RecentScrobblesViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        // TODO: Route to the selected album details.
+        tableView.deselectRow(at: indexPath, animated: true)
+
+        let scrobble = scrobbles[indexPath.row]
+        guard let albumName = scrobble.albumName else { return }
+
+        albumDetailRouter.route(
+            from: self,
+            albumName: albumName,
+            artistName: scrobble.artistName
+        )
     }
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
