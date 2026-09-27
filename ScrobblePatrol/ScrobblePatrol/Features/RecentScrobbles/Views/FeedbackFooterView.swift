@@ -34,10 +34,6 @@ final class FeedbackFooterView: UIView, ViewCode {
         return stackView
     }()
 
-    override var intrinsicContentSize: CGSize {
-        CGSize(width: UIView.noIntrinsicMetric, height: 56)
-    }
-
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()

@@ -29,7 +29,7 @@ final class RecentScrobblesViewController: UIViewController, ViewCode {
     }()
 
     private lazy var feedbackFooterView: FeedbackFooterView = {
-        let footerView = FeedbackFooterView(frame: CGRect(x: 0, y: 0, width: 0, height: 56))
+        let footerView = FeedbackFooterView(frame: CGRect(x: 0, y: 0, width: 0, height: 96))
         footerView.onRetry = { [weak self] in
             self?.interactor.retry()
         }

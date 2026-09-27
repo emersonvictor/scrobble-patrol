@@ -54,8 +54,6 @@ final class RecentScrobblesInteractor: RecentScrobblesInteractorProtocol {
     }
 
     func updateUsername(_ username: String) {
-        guard !isLoading else { return }
-
         usernameStore.update(username)
         currentUsername = usernameStore.username
         currentPage = 1
@@ -102,13 +100,14 @@ private extension RecentScrobblesInteractor {
     func loadScrobbles(isRefreshing: Bool = false) {
         guard let currentUsername, !isLoading else { return }
 
+        let requestedUsername = currentUsername
         isLoading = true
         if !isRefreshing {
             presenter.presentLoading()
         }
 
         repository.getRecentTracks(
-            username: currentUsername,
+            username: requestedUsername,
             page: currentPage
         ) { [weak self] result in
             guard let self else { return }
@@ -116,6 +115,11 @@ private extension RecentScrobblesInteractor {
 
             if isRefreshing {
                 presenter.finishRefreshing()
+            }
+
+            guard self.currentUsername == requestedUsername else {
+                loadScrobbles()
+                return
             }
 
             switch result {
