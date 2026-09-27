@@ -6,7 +6,7 @@ protocol AlbumGridViewProtocol: AnyObject {
     func displayUsername(_ username: String?)
 }
 
-final class AlbumGridViewController: UIViewController, AlbumGridViewProtocol, ViewCode {
+final class AlbumGridViewController: UIViewController {
     private let interactor: any AlbumGridInteractorProtocol
     private let albumDetailRouter: AlbumDetailRouter
 
@@ -129,15 +129,33 @@ final class AlbumGridViewController: UIViewController, AlbumGridViewProtocol, Vi
         interactor.viewDidLoad()
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        interactor.viewWillAppear()
+    }
+
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         collectionView.collectionViewLayout.invalidateLayout()
     }
 
+    @objc private func gridSizeChanged() {
+        collectionView.reloadData()
+        collectionView.collectionViewLayout.invalidateLayout()
+    }
+
+    @objc private func generate() {
+        // TODO: Solicitar ao Interactor os álbuns do período e tamanho selecionados.
+    }
+}
+
+extension AlbumGridViewController: AlbumGridViewProtocol {
     func displayUsername(_ username: String?) {
         usernameView.setUsername(username ?? "")
     }
+}
 
+extension AlbumGridViewController: ViewCode {
     func buildViewHierarchy() {
         view.addSubview(usernameView)
         view.addSubview(controlsStackView)
@@ -169,15 +187,6 @@ final class AlbumGridViewController: UIViewController, AlbumGridViewProtocol, Vi
     func setupAdditionalConfiguration() {
         navigationItem.title = String(localized: .tabBarGrid)
         view.backgroundColor = .systemBackground
-    }
-
-    @objc private func gridSizeChanged() {
-        collectionView.reloadData()
-        collectionView.collectionViewLayout.invalidateLayout()
-    }
-
-    @objc private func generate() {
-        // TODO: Solicitar ao Interactor os álbuns do período e tamanho selecionados.
     }
 }
 

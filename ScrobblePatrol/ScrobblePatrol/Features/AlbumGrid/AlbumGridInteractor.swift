@@ -1,9 +1,9 @@
-import Combine
 import Foundation
 
 @MainActor
 protocol AlbumGridInteractorProtocol {
     func viewDidLoad()
+    func viewWillAppear()
     func updateUser(username: String)
 }
 
@@ -12,7 +12,7 @@ final class AlbumGridInteractor: AlbumGridInteractorProtocol {
     private let presenter: any AlbumGridPresenterProtocol
     private let repository: any LastFmRepositoryProtocol
     private let usernameStore: any UsernameStoreProtocol
-    private var cancellables = Set<AnyCancellable>()
+    private var currentUsername: String?
 
     init(
         presenter: any AlbumGridPresenterProtocol,
@@ -25,14 +25,21 @@ final class AlbumGridInteractor: AlbumGridInteractorProtocol {
     }
 
     func viewDidLoad() {
-        usernameStore.usernamePublisher
-            .sink { [weak self] username in
-                self?.presenter.presentUsername(username)
-            }
-            .store(in: &cancellables)
+        currentUsername = usernameStore.username
+        presenter.presentUsername(currentUsername)
+    }
+
+    func viewWillAppear() {
+        let storedUsername = usernameStore.username
+        guard storedUsername != currentUsername else { return }
+
+        currentUsername = storedUsername
+        presenter.presentUsername(currentUsername)
     }
 
     func updateUser(username: String) {
         usernameStore.update(username)
+        currentUsername = usernameStore.username
+        presenter.presentUsername(currentUsername)
     }
 }

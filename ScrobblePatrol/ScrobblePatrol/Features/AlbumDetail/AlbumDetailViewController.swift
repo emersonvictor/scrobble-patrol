@@ -8,7 +8,7 @@ protocol AlbumDetailViewProtocol: AnyObject {
     func displayError(message: String, retryTitle: String)
 }
 
-final class AlbumDetailViewController: UIViewController, AlbumDetailViewProtocol, ViewCode {
+final class AlbumDetailViewController: UIViewController {
     private let albumName: String
     private let interactor: any AlbumDetailInteractorProtocol
     private var lastFMURL: URL?
@@ -151,6 +151,13 @@ final class AlbumDetailViewController: UIViewController, AlbumDetailViewProtocol
         interactor.viewDidLoad()
     }
 
+    @objc private func openLastFM() {
+        guard let lastFMURL else { return }
+        UIApplication.shared.open(lastFMURL)
+    }
+}
+
+extension AlbumDetailViewController: AlbumDetailViewProtocol {
     func displayLoading() {
         scrollView.isHidden = true
         feedbackView.displayLoading()
@@ -179,7 +186,9 @@ final class AlbumDetailViewController: UIViewController, AlbumDetailViewProtocol
         scrollView.isHidden = true
         feedbackView.displayError(message: message, retryTitle: retryTitle)
     }
+}
 
+extension AlbumDetailViewController: ViewCode {
     func buildViewHierarchy() {
         view.addSubview(scrollView)
         view.addSubview(feedbackView)
@@ -226,11 +235,6 @@ final class AlbumDetailViewController: UIViewController, AlbumDetailViewProtocol
     func setupAdditionalConfiguration() {
         navigationItem.title = albumName
         view.backgroundColor = .systemBackground
-    }
-
-    @objc private func openLastFM() {
-        guard let lastFMURL else { return }
-        UIApplication.shared.open(lastFMURL)
     }
 }
 

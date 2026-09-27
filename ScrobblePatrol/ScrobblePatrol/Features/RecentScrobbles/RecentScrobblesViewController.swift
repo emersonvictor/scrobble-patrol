@@ -10,7 +10,7 @@ protocol RecentScrobblesViewProtocol: AnyObject {
     func finishRefreshing()
 }
 
-final class RecentScrobblesViewController: UIViewController, ViewCode {
+final class RecentScrobblesViewController: UIViewController {
     private let interactor: any RecentScrobblesInteractorProtocol
     private let albumDetailRouter: AlbumDetailRouter
     
@@ -75,6 +75,13 @@ final class RecentScrobblesViewController: UIViewController, ViewCode {
         interactor.viewWillAppear()
     }
 
+    @objc private func refresh() {
+        interactor.refresh()
+    }
+}
+
+// MARK: - ViewCode
+extension RecentScrobblesViewController: ViewCode {
     func buildViewHierarchy() {
         view.addSubview(usernameView)
         view.addSubview(tableView)
@@ -85,7 +92,7 @@ final class RecentScrobblesViewController: UIViewController, ViewCode {
             make.top.equalTo(view.safeAreaLayoutGuide).offset(16)
             make.leading.trailing.equalTo(view.layoutMarginsGuide)
         }
-        
+
         tableView.snp.makeConstraints { make in
             make.top.equalTo(usernameView.snp.bottom).offset(16)
             make.leading.trailing.bottom.equalToSuperview()
@@ -95,10 +102,6 @@ final class RecentScrobblesViewController: UIViewController, ViewCode {
     func setupAdditionalConfiguration() {
         navigationItem.title = String(localized: .recentScrobblesTitle)
         view.backgroundColor = .systemBackground
-    }
-
-    @objc private func refresh() {
-        interactor.refresh()
     }
 }
 
