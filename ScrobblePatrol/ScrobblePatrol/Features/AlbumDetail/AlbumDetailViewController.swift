@@ -11,6 +11,7 @@ protocol AlbumDetailViewProtocol: AnyObject {
 final class AlbumDetailViewController: UIViewController, AlbumDetailViewProtocol, ViewCode {
     private let albumName: String
     private let interactor: any AlbumDetailInteractorProtocol
+    private var lastFMURL: URL?
 
     private lazy var scrollView: UIScrollView = {
         let scrollView = UIScrollView()
@@ -62,14 +63,7 @@ final class AlbumDetailViewController: UIViewController, AlbumDetailViewProtocol
         return stackView
     }()
 
-    private lazy var tagsStackView: UIStackView = {
-        let stackView = UIStackView()
-        stackView.axis = .horizontal
-        stackView.alignment = .center
-        stackView.distribution = .fill
-        stackView.spacing = 16
-        return stackView
-    }()
+    private lazy var tagsView = AlbumTagsView()
 
     private lazy var tracksCountLabel: UILabel = {
         let label = UILabel()
@@ -123,6 +117,7 @@ final class AlbumDetailViewController: UIViewController, AlbumDetailViewProtocol
         var configuration = UIButton.Configuration.bordered()
         configuration.title = String(localized: .albumDetailOpenLastFM)
         let button = UIButton(configuration: configuration)
+        button.addTarget(self, action: #selector(openLastFM), for: .touchUpInside)
         return button
     }()
 
@@ -130,7 +125,7 @@ final class AlbumDetailViewController: UIViewController, AlbumDetailViewProtocol
         let stackView = UIStackView(arrangedSubviews: [
             artworkContainerView,
             albumHeaderStackView,
-            tagsStackView,
+            tagsView,
             statisticsStackView,
             tracklistStackView,
             lastFMButton
@@ -163,6 +158,8 @@ final class AlbumDetailViewController: UIViewController, AlbumDetailViewProtocol
 
     func displayAlbum(_ album: Album) {
         navigationItem.title = album.name
+        lastFMURL = album.lastFMURL
+        lastFMButton.isEnabled = album.lastFMURL != nil
         artworkView.load(url: album.imageURL)
         albumNameLabel.text = album.name
         artistNameLabel.text = album.artistName
@@ -171,7 +168,7 @@ final class AlbumDetailViewController: UIViewController, AlbumDetailViewProtocol
             "\($0.formatted(.number.notation(.compactName))) ouvintes"
         }
 
-        configureTags(album.tags)
+        tagsView.setTags(album.tags)
         configureTracks(album.tracks)
 
         feedbackView.hide()
@@ -230,22 +227,14 @@ final class AlbumDetailViewController: UIViewController, AlbumDetailViewProtocol
         navigationItem.title = albumName
         view.backgroundColor = .systemBackground
     }
+
+    @objc private func openLastFM() {
+        guard let lastFMURL else { return }
+        UIApplication.shared.open(lastFMURL)
+    }
 }
 
 private extension AlbumDetailViewController {
-    func configureTags(_ tags: [String]) {
-        tagsStackView.arrangedSubviews.forEach {
-            tagsStackView.removeArrangedSubview($0)
-            $0.removeFromSuperview()
-        }
-
-        tags.prefix(3).forEach { tag in
-            tagsStackView.addArrangedSubview(makeTagView(text: tag))
-        }
-
-        tagsStackView.addArrangedSubview(UIView())
-    }
-
     func configureTracks(_ tracks: [AlbumTrack]) {
         tracksStackView.arrangedSubviews.forEach {
             tracksStackView.removeArrangedSubview($0)
@@ -266,7 +255,7 @@ private extension AlbumDetailViewController {
             let durationLabel = UILabel()
             durationLabel.font = .preferredFont(forTextStyle: .body)
             durationLabel.textColor = .secondaryLabel
-            durationLabel.text = formattedDuration(track.duration)
+            durationLabel.text = track.formattedDuration
             durationLabel.setContentHuggingPriority(.required, for: .horizontal)
 
             let stackView = UIStackView(arrangedSubviews: [positionLabel, nameLabel, durationLabel])
@@ -277,33 +266,4 @@ private extension AlbumDetailViewController {
         }
     }
 
-    func formattedDuration(_ duration: TimeInterval?) -> String? {
-        guard let duration else { return "-" }
-        let totalSeconds = Int(duration)
-        return String(format: "%d:%02d", totalSeconds / 60, totalSeconds % 60)
-    }
-
-    func makeTagView(text: String) -> UIView {
-        let label = UILabel()
-        label.font = .preferredFont(forTextStyle: .subheadline)
-        label.textColor = .secondaryLabel
-        label.text = text
-
-        let containerView = UIView()
-        containerView.layer.borderColor = UIColor.separator.cgColor
-        containerView.layer.borderWidth = 1
-        containerView.layer.cornerRadius = 16
-        containerView.addSubview(label)
-
-        containerView.snp.makeConstraints { make in
-            make.height.equalTo(32)
-        }
-
-        label.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview().inset(12)
-            make.centerY.equalToSuperview()
-        }
-
-        return containerView
-    }
 }
