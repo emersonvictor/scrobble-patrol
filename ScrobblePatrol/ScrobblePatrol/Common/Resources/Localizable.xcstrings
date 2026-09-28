@@ -1,6 +1,28 @@
 {
   "sourceLanguage" : "pt-BR",
   "strings" : {
+    "albumGrid.loadError" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível carregar os álbuns."
+          }
+        }
+      }
+    },
+    "albumGrid.share" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compartilhar"
+          }
+        }
+      }
+    },
     "albumDetail.loadError" : {
       "extractionState" : "manual",
       "localizations" : {

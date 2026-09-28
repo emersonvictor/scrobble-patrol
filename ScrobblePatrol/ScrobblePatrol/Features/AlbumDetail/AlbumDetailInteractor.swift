@@ -45,7 +45,6 @@ private extension AlbumDetailInteractor {
             case let .success(album):
                 presenter.presentAlbum(album)
             case let .failure(error):
-                debugPrint(error)
                 presenter.presentError(error)
             }
         }

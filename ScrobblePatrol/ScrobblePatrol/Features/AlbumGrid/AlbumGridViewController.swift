@@ -4,11 +4,16 @@ import UIKit
 @MainActor
 protocol AlbumGridViewProtocol: AnyObject {
     func displayUsername(_ username: String?)
+    func displayLoading()
+    func displayAlbums(_ albums: [TopAlbum])
+    func displayError(message: String, retryTitle: String)
 }
 
 final class AlbumGridViewController: UIViewController {
     private let interactor: any AlbumGridInteractorProtocol
     private let albumDetailRouter: AlbumDetailRouter
+    private var albums: [TopAlbum] = []
+    private var isShowingFeedback = false
 
     private lazy var usernameView: UsernameView = {
         let usernameView = UsernameView()
@@ -81,11 +86,31 @@ final class AlbumGridViewController: UIViewController {
         return button
     }()
 
+    private lazy var shareButton: UIButton = {
+        var configuration = UIButton.Configuration.bordered()
+        configuration.image = UIImage(systemName: "square.and.arrow.up")
+        configuration.cornerStyle = .capsule
+        let button = UIButton(configuration: configuration)
+        button.isEnabled = false
+        button.accessibilityLabel = String(localized: .albumGridShare)
+        button.addTarget(self, action: #selector(share), for: .touchUpInside)
+        return button
+    }()
+
+    private lazy var buttonsStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [generateButton, shareButton])
+        stackView.axis = .horizontal
+        stackView.alignment = .fill
+        stackView.distribution = .fill
+        stackView.spacing = 12
+        return stackView
+    }()
+
     private lazy var controlsStackView: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [
             periodStackView,
             gridStackView,
-            generateButton
+            buttonsStackView
         ])
         stackView.axis = .vertical
         stackView.alignment = .fill
@@ -106,8 +131,16 @@ final class AlbumGridViewController: UIViewController {
         collectionView.isScrollEnabled = false
         collectionView.dataSource = self
         collectionView.delegate = self
-        collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "AlbumCell")
+        collectionView.register(AlbumGridCell.self, forCellWithReuseIdentifier: AlbumGridCell.reuseIdentifier)
         return collectionView
+    }()
+
+    private lazy var feedbackView: FeedbackView = {
+        let feedbackView = FeedbackView()
+        feedbackView.onRetry = { [weak self] in
+            self?.interactor.retry()
+        }
+        return feedbackView
     }()
 
     private var gridSize: Int {
@@ -145,13 +178,45 @@ final class AlbumGridViewController: UIViewController {
     }
 
     @objc private func generate() {
-        // TODO: Solicitar ao Interactor os álbuns do período e tamanho selecionados.
+        interactor.generate(
+            periodIndex: periodSegmentedControl.selectedSegmentIndex,
+            gridSize: gridSize
+        )
+    }
+
+    @objc private func share() {
+        interactor.share()
     }
 }
 
 extension AlbumGridViewController: AlbumGridViewProtocol {
     func displayUsername(_ username: String?) {
         usernameView.setUsername(username ?? "")
+    }
+
+    func displayLoading() {
+        setControlsEnabled(false)
+        generateButton.configuration?.showsActivityIndicator = true
+        isShowingFeedback = false
+        collectionView.backgroundView = nil
+        collectionView.reloadData()
+    }
+
+    func displayAlbums(_ albums: [TopAlbum]) {
+        self.albums = albums
+        isShowingFeedback = false
+        finishLoading()
+        shareButton.isEnabled = !albums.isEmpty
+        collectionView.backgroundView = nil
+        collectionView.reloadData()
+    }
+
+    func displayError(message: String, retryTitle: String) {
+        finishLoading()
+        isShowingFeedback = true
+        feedbackView.displayError(message: message, retryTitle: retryTitle)
+        collectionView.backgroundView = feedbackView
+        collectionView.reloadData()
     }
 }
 
@@ -173,8 +238,8 @@ extension AlbumGridViewController: ViewCode {
             make.leading.trailing.equalTo(view.layoutMarginsGuide)
         }
 
-        generateButton.snp.makeConstraints { make in
-            make.height.equalTo(44)
+        shareButton.snp.makeConstraints { make in
+            make.size.equalTo(44)
         }
 
         collectionView.snp.makeConstraints { make in
@@ -192,24 +257,60 @@ extension AlbumGridViewController: ViewCode {
 
 extension AlbumGridViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        gridSize * gridSize
+        isShowingFeedback ? 0 : gridSize * gridSize
     }
 
     func collectionView(
         _ collectionView: UICollectionView,
         cellForItemAt indexPath: IndexPath
     ) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "AlbumCell", for: indexPath)
+        guard
+            let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: AlbumGridCell.reuseIdentifier,
+                for: indexPath
+            ) as? AlbumGridCell
+        else {
+            return UICollectionViewCell()
+        }
+
         let row = indexPath.item / gridSize
         let column = indexPath.item % gridSize
-        cell.backgroundColor = (row + column).isMultiple(of: 2)
+        let placeholderColor: UIColor = (row + column).isMultiple(of: 2)
             ? .systemGray4
             : .systemGray6
+
+        let album = albums.indices.contains(indexPath.item) ? albums[indexPath.item] : nil
+        cell.configure(album: album, placeholderColor: placeholderColor)
         return cell
     }
 }
 
+private extension AlbumGridViewController {
+    func setControlsEnabled(_ isEnabled: Bool) {
+        usernameView.isUserInteractionEnabled = isEnabled
+        periodSegmentedControl.isEnabled = isEnabled
+        gridSegmentedControl.isEnabled = isEnabled
+        generateButton.isEnabled = isEnabled
+        shareButton.isEnabled = isEnabled && !albums.isEmpty
+    }
+
+    func finishLoading() {
+        generateButton.configuration?.showsActivityIndicator = false
+        setControlsEnabled(true)
+    }
+}
+
 extension AlbumGridViewController: UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard albums.indices.contains(indexPath.item) else { return }
+        let album = albums[indexPath.item]
+        albumDetailRouter.route(
+            from: self,
+            albumName: album.name,
+            artistName: album.artistName
+        )
+    }
+
     func collectionView(
         _ collectionView: UICollectionView,
         layout collectionViewLayout: UICollectionViewLayout,
