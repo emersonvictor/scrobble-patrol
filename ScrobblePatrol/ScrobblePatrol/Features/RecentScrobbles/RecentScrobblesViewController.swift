@@ -155,12 +155,12 @@ extension RecentScrobblesViewController: RecentScrobblesViewProtocol {
 
     func displayLoading() {
         feedbackView.displayLoading()
-        tableView.tableFooterView = feedbackView
+        displayFeedbackView()
     }
 
     func displayError(message: String, retryTitle: String) {
         feedbackView.displayError(message: message, retryTitle: retryTitle)
-        tableView.tableFooterView = feedbackView
+        displayFeedbackView()
     }
 
     func displayScrobbles(_ scrobbles: [RecentScrobble]) {
@@ -171,5 +171,16 @@ extension RecentScrobblesViewController: RecentScrobblesViewProtocol {
 
     func finishRefreshing() {
         refreshControl.endRefreshing()
+    }
+}
+
+private extension RecentScrobblesViewController {
+    func displayFeedbackView() {
+        tableView.layoutIfNeeded()
+        feedbackView.frame.size = CGSize(
+            width: tableView.bounds.width,
+            height: 96
+        )
+        tableView.tableFooterView = feedbackView
     }
 }

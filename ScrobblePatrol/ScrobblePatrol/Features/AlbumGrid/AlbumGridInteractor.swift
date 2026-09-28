@@ -7,7 +7,6 @@ protocol AlbumGridInteractorProtocol {
     func updateUser(username: String)
     func generate(periodIndex: Int, gridSize: Int)
     func retry()
-    func share()
 }
 
 @MainActor
@@ -63,9 +62,6 @@ final class AlbumGridInteractor: AlbumGridInteractorProtocol {
         loadAlbums(period: lastPeriod, gridSize: lastGridSize)
     }
 
-    func share() {
-        // TODO: Compartilhar a imagem gerada da grade.
-    }
 }
 
 private extension AlbumGridInteractor {

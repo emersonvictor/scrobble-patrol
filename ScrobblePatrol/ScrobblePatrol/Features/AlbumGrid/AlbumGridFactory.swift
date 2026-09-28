@@ -13,7 +13,12 @@ enum AlbumGridFactory {
             usernameStore: usernameStore
         )
         let router = AlbumDetailRouter(repository: repository)
-        let viewController = AlbumGridViewController(interactor: interactor, albumDetailRouter: router)
+        let imageRenderer = AlbumGridImageRenderer()
+        let viewController = AlbumGridViewController(
+            interactor: interactor,
+            albumDetailRouter: router,
+            imageRenderer: imageRenderer
+        )
         presenter.attach(view: viewController)
         return viewController
     }

@@ -12,6 +12,7 @@ protocol AlbumGridViewProtocol: AnyObject {
 final class AlbumGridViewController: UIViewController {
     private let interactor: any AlbumGridInteractorProtocol
     private let albumDetailRouter: AlbumDetailRouter
+    private let imageRenderer: any AlbumGridImageRendering
     private var albums: [TopAlbum] = []
     private var isShowingFeedback = false
 
@@ -147,9 +148,14 @@ final class AlbumGridViewController: UIViewController {
         gridSegmentedControl.selectedSegmentIndex + 3
     }
 
-    init(interactor: any AlbumGridInteractorProtocol, albumDetailRouter: AlbumDetailRouter) {
+    init(
+        interactor: any AlbumGridInteractorProtocol,
+        albumDetailRouter: AlbumDetailRouter,
+        imageRenderer: any AlbumGridImageRendering
+    ) {
         self.interactor = interactor
         self.albumDetailRouter = albumDetailRouter
+        self.imageRenderer = imageRenderer
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -185,7 +191,18 @@ final class AlbumGridViewController: UIViewController {
     }
 
     @objc private func share() {
-        interactor.share()
+        guard let image = imageRenderer.render(
+            collectionView: collectionView,
+            gridSize: gridSize
+        ) else { return }
+
+        let activityViewController = UIActivityViewController(
+            activityItems: [image],
+            applicationActivities: nil
+        )
+        activityViewController.popoverPresentationController?.sourceView = shareButton
+        activityViewController.popoverPresentationController?.sourceRect = shareButton.bounds
+        present(activityViewController, animated: true)
     }
 }
 

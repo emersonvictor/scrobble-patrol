@@ -105,8 +105,10 @@ final class RecentScrobbleCell: UITableViewCell, ViewCode {
     func setupConstraints() {
         artworkView.snp.makeConstraints { make in
             make.leading.equalTo(contentView.layoutMarginsGuide)
-            make.top.bottom.equalToSuperview().inset(12)
+            make.centerY.equalToSuperview()
             make.size.equalTo(88)
+            make.top.greaterThanOrEqualToSuperview().inset(12)
+            make.bottom.lessThanOrEqualToSuperview().inset(12)
         }
 
         trackLabel.snp.makeConstraints { make in
