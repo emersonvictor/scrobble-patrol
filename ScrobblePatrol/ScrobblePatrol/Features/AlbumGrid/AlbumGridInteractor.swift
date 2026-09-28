@@ -81,7 +81,7 @@ private extension AlbumGridInteractor {
             guard let self else { return }
             isLoading = false
 
-            guard currentUsername == requestedUsername else {
+            guard self.currentUsername == requestedUsername else {
                 presenter.presentAlbums([])
                 return
             }

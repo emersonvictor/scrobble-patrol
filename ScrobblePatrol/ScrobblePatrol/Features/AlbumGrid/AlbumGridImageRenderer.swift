@@ -23,7 +23,7 @@ final class AlbumGridImageRenderer: AlbumGridImageRendering {
         )
 
         let format = UIGraphicsImageRendererFormat()
-        format.scale = UIScreen.main.scale
+        format.scale = collectionView.traitCollection.displayScale
         format.opaque = true
 
         let renderer = UIGraphicsImageRenderer(

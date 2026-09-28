@@ -143,6 +143,100 @@ final class LastFmRepositoryTests: XCTestCase {
         XCTAssertEqual(error as NSError, underlying)
     }
 
+    func testGetAlbumInfoRequestsExpectedEndpoint() async throws {
+        let client = LastFmAPIClientMock(result: .success(try AlbumInfoResponseDTO.fixture()))
+        let repository = LastFmRepository(apiClient: client)
+
+        await repository.getAlbumInfo(
+            artist: "Weyes Blood",
+            album: "Titanic Rising"
+        ) { _ in }.value
+
+        let endpoint = try XCTUnwrap(client.requestedEndpoints.first)
+        guard case let .albumInfo(artist, album) = endpoint else {
+            return XCTFail("Expected the album info endpoint")
+        }
+        XCTAssertEqual(artist, "Weyes Blood")
+        XCTAssertEqual(album, "Titanic Rising")
+    }
+
+    func testGetAlbumInfoReturnsMappedAlbum() async throws {
+        let client = LastFmAPIClientMock(result: .success(try AlbumInfoResponseDTO.fixture()))
+
+        let album = try await getAlbumResult(client: client).get()
+
+        XCTAssertEqual(album.name, "Titanic Rising")
+        XCTAssertEqual(album.artistName, "Weyes Blood")
+        XCTAssertEqual(album.imageURL?.absoluteString, "https://example.com/large.jpg")
+        XCTAssertEqual(album.listeners, 1000)
+        XCTAssertEqual(album.playcount, 2000)
+        XCTAssertEqual(album.tags, ["baroque pop"])
+        XCTAssertEqual(album.tracks.first?.name, "A Lot's Gonna Change")
+        XCTAssertEqual(album.tracks.first?.duration, 262)
+    }
+
+    func testGetAlbumInfoPreservesAPIError() async throws {
+        let client = LastFmAPIClientMock(
+            result: .failure(LastFmError.api(code: 6, message: "Album not found"))
+        )
+
+        let result = try await getAlbumResult(client: client)
+
+        guard case let .failure(.api(code, message)) = result else {
+            return XCTFail("Expected the original API error")
+        }
+        XCTAssertEqual(code, 6)
+        XCTAssertEqual(message, "Album not found")
+    }
+
+    func testGetTopAlbumsRequestsExpectedEndpoint() async throws {
+        let client = LastFmAPIClientMock(result: .success(TopAlbumsResponseDTO.fixture()))
+        let repository = LastFmRepository(apiClient: client)
+
+        await repository.getTopAlbums(
+            username: "listener",
+            period: .month,
+            page: 3,
+            limit: 16
+        ) { _ in }.value
+
+        let endpoint = try XCTUnwrap(client.requestedEndpoints.first)
+        guard case let .topAlbums(username, period, page, limit) = endpoint else {
+            return XCTFail("Expected the top albums endpoint")
+        }
+        XCTAssertEqual(username, "listener")
+        XCTAssertEqual(period, .month)
+        XCTAssertEqual(page, 3)
+        XCTAssertEqual(limit, 16)
+    }
+
+    func testGetTopAlbumsReturnsMappedPage() async throws {
+        let client = LastFmAPIClientMock(result: .success(TopAlbumsResponseDTO.fixture()))
+
+        let page = try await getTopAlbumsResult(client: client).get()
+
+        XCTAssertEqual(page.page, 2)
+        XCTAssertEqual(page.totalPages, 4)
+        XCTAssertEqual(page.albums.count, 1)
+        XCTAssertEqual(page.albums.first?.name, "Titanic Rising")
+        XCTAssertEqual(page.albums.first?.artistName, "Weyes Blood")
+        XCTAssertEqual(page.albums.first?.imageURL?.absoluteString, "https://example.com/large.jpg")
+        XCTAssertEqual(page.albums.first?.playcount, 100)
+    }
+
+    func testGetTopAlbumsPreservesNetworkError() async throws {
+        let client = LastFmAPIClientMock(
+            result: .failure(LastFmError.network(URLError(.notConnectedToInternet)))
+        )
+
+        let result = try await getTopAlbumsResult(client: client)
+
+        guard case let .failure(.network(error)) = result else {
+            return XCTFail("Expected the original network error")
+        }
+        XCTAssertEqual(error.code, .notConnectedToInternet)
+    }
+
     private func getResult(
         client: LastFmAPIClientMock,
         file: StaticString = #filePath,
@@ -152,6 +246,42 @@ final class LastFmRepositoryTests: XCTestCase {
         var results: [Result<RecentScrobblesPage, LastFmError>] = []
 
         await repository.getRecentTracks(username: "listener") { results.append($0) }.value
+
+        XCTAssertEqual(results.count, 1, "Completion must run exactly once", file: file, line: line)
+        return try XCTUnwrap(results.first, file: file, line: line)
+    }
+
+    private func getAlbumResult(
+        client: LastFmAPIClientMock,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) async throws -> Result<Album, LastFmError> {
+        let repository = LastFmRepository(apiClient: client)
+        var results: [Result<Album, LastFmError>] = []
+
+        await repository.getAlbumInfo(
+            artist: "Weyes Blood",
+            album: "Titanic Rising"
+        ) { results.append($0) }.value
+
+        XCTAssertEqual(results.count, 1, "Completion must run exactly once", file: file, line: line)
+        return try XCTUnwrap(results.first, file: file, line: line)
+    }
+
+    private func getTopAlbumsResult(
+        client: LastFmAPIClientMock,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) async throws -> Result<TopAlbumsPage, LastFmError> {
+        let repository = LastFmRepository(apiClient: client)
+        var results: [Result<TopAlbumsPage, LastFmError>] = []
+
+        await repository.getTopAlbums(
+            username: "listener",
+            period: .week,
+            page: 1,
+            limit: 9
+        ) { results.append($0) }.value
 
         XCTAssertEqual(results.count, 1, "Completion must run exactly once", file: file, line: line)
         return try XCTUnwrap(results.first, file: file, line: line)

@@ -8,7 +8,23 @@ final class LastFmRepositoryMock: LastFmRepositoryProtocol {
         let completion: RecentScrobblesCompletion
     }
 
+    struct AlbumInfoRequest {
+        let artist: String
+        let album: String
+        let completion: AlbumCompletion
+    }
+
+    struct TopAlbumsRequest {
+        let username: String
+        let period: TopAlbumsPeriod
+        let page: Int
+        let limit: Int
+        let completion: TopAlbumsCompletion
+    }
+
     private(set) var recentTracksRequests: [RecentTracksRequest] = []
+    private(set) var albumInfoRequests: [AlbumInfoRequest] = []
+    private(set) var topAlbumsRequests: [TopAlbumsRequest] = []
 
     @discardableResult
     func getRecentTracks(
@@ -30,7 +46,12 @@ final class LastFmRepositoryMock: LastFmRepositoryProtocol {
         album: String,
         completion: @escaping AlbumCompletion
     ) -> Task<Void, Never> {
-        Task {}
+        albumInfoRequests.append(.init(
+            artist: artist,
+            album: album,
+            completion: completion
+        ))
+        return Task {}
     }
 
     @discardableResult
@@ -41,7 +62,14 @@ final class LastFmRepositoryMock: LastFmRepositoryProtocol {
         limit: Int,
         completion: @escaping TopAlbumsCompletion
     ) -> Task<Void, Never> {
-        Task {}
+        topAlbumsRequests.append(.init(
+            username: username,
+            period: period,
+            page: page,
+            limit: limit,
+            completion: completion
+        ))
+        return Task {}
     }
 
     func completeRecentTracks(
@@ -49,5 +77,19 @@ final class LastFmRepositoryMock: LastFmRepositoryProtocol {
         with result: Result<RecentScrobblesPage, LastFmError>
     ) {
         recentTracksRequests[index].completion(result)
+    }
+
+    func completeAlbumInfo(
+        at index: Int = 0,
+        with result: Result<Album, LastFmError>
+    ) {
+        albumInfoRequests[index].completion(result)
+    }
+
+    func completeTopAlbums(
+        at index: Int = 0,
+        with result: Result<TopAlbumsPage, LastFmError>
+    ) {
+        topAlbumsRequests[index].completion(result)
     }
 }
