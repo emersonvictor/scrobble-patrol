@@ -68,12 +68,30 @@ final class RecentScrobblesInteractorTests: XCTestCase {
         XCTAssertEqual(context.presenter.presentedScrobbles.last, [first, second])
     }
 
-    func testPaginationFailureRetriesSamePage() {
+    func testLoadNextPageDoesNotRequestAfterLastPage() {
         let context = makeContext(username: "listener")
         context.sut.viewDidLoad()
         context.repository.completeRecentTracks(
+            with: .success(.fixture(scrobbles: [.fixture()], page: 1, totalPages: 2))
+        )
+        context.sut.loadNextPage()
+        context.repository.completeRecentTracks(
+            at: 1,
+            with: .success(.fixture(scrobbles: [.fixture()], page: 2, totalPages: 2))
+        )
+
+        context.sut.loadNextPage()
+
+        XCTAssertEqual(context.repository.recentTracksRequests.count, 2)
+    }
+
+    func testPaginationFailureRetriesSamePage() {
+        let context = makeContext(username: "listener")
+        let first = RecentScrobble.fixture()
+        context.sut.viewDidLoad()
+        context.repository.completeRecentTracks(
             with: .success(.fixture(
-                scrobbles: [.fixture()],
+                scrobbles: [first],
                 page: 1,
                 totalPages: 2
             ))
@@ -84,6 +102,7 @@ final class RecentScrobblesInteractorTests: XCTestCase {
             with: .failure(.httpStatus(500))
         )
 
+        XCTAssertEqual(context.presenter.presentedScrobbles.last, [first])
         context.sut.retry()
 
         XCTAssertEqual(context.repository.recentTracksRequests.last?.page, 2)
@@ -170,7 +189,7 @@ final class RecentScrobblesInteractorTests: XCTestCase {
             context.presenter.usernameInputEnabledStates,
             [false, true, false, true, false]
         )
-        context.repository.completeRecentTracks(at: 2, with: .success(.fixture()))
+        context.repository.completeRecentTracks(at: 2, with: .success(.fixture(scrobbles: [])))
         XCTAssertEqual(context.presenter.usernameInputEnabledStates.last, true)
     }
 
