@@ -179,6 +179,10 @@ final class AlbumGridViewController: UIViewController {
     }
 
     @objc private func gridSizeChanged() {
+        albums = []
+        isShowingFeedback = false
+        shareButton.isEnabled = false
+        collectionView.backgroundView = nil
         collectionView.reloadData()
         collectionView.collectionViewLayout.invalidateLayout()
     }
