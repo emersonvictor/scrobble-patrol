@@ -124,23 +124,68 @@ final class RecentScrobblesInteractorTests: XCTestCase {
         )
     }
 
-    func testChangingUsernameDuringRequestDiscardsOldResultAndLoadsNewUsername() {
+    func testUsernameConfirmationWhileLoadingIsIgnored() {
         let context = makeContext(username: "old-user")
         context.sut.viewDidLoad()
 
         context.sut.updateUsername("new-user")
 
+        XCTAssertEqual(context.store.username, "old-user")
         XCTAssertEqual(context.repository.recentTracksRequests.count, 1)
         context.repository.completeRecentTracks(
             with: .success(.fixture(scrobbles: [.fixture(trackName: "Old")]))
         )
-        XCTAssertEqual(context.repository.recentTracksRequests.count, 2)
-        XCTAssertEqual(context.repository.recentTracksRequests[1].username, "new-user")
-        XCTAssertFalse(
-            context.presenter.presentedScrobbles.contains { scrobbles in
-                scrobbles.contains { $0.trackName == "Old" }
-            }
+
+        XCTAssertEqual(context.repository.recentTracksRequests.count, 1)
+        XCTAssertEqual(context.presenter.usernameInputEnabledStates, [false, true])
+    }
+
+    func testConfirmingSameUsernameKeepsResultsAndPagination() {
+        let context = makeContext(username: "listener")
+        let first = RecentScrobble.fixture(trackName: "First")
+        context.sut.viewDidLoad()
+        context.repository.completeRecentTracks(
+            with: .success(.fixture(scrobbles: [first], page: 1, totalPages: 2))
         )
+
+        context.sut.updateUsername("  listener  ")
+
+        XCTAssertEqual(context.repository.recentTracksRequests.count, 1)
+        XCTAssertEqual(context.presenter.presentedScrobbles.last, [first])
+        context.sut.loadNextPage()
+        XCTAssertEqual(context.repository.recentTracksRequests.last?.page, 2)
+    }
+
+    func testUsernameInputIsReenabledAfterPaginationErrorAndRefresh() {
+        let context = makeContext(username: "listener")
+        context.sut.viewDidLoad()
+        context.repository.completeRecentTracks(
+            with: .success(.fixture(scrobbles: [.fixture()], page: 1, totalPages: 2))
+        )
+        context.sut.loadNextPage()
+        context.repository.completeRecentTracks(at: 1, with: .failure(.httpStatus(500)))
+        context.sut.refresh()
+
+        XCTAssertEqual(
+            context.presenter.usernameInputEnabledStates,
+            [false, true, false, true, false]
+        )
+        context.repository.completeRecentTracks(at: 2, with: .success(.fixture()))
+        XCTAssertEqual(context.presenter.usernameInputEnabledStates.last, true)
+    }
+
+    func testChangingUsernameInOtherTabDuringRequestDiscardsOldResult() {
+        let context = makeContext(username: "old-user")
+        context.sut.viewDidLoad()
+        context.store.update("new-user")
+        context.sut.viewWillAppear()
+
+        context.repository.completeRecentTracks(
+            with: .success(.fixture(scrobbles: [.fixture(trackName: "Old")]))
+        )
+
+        XCTAssertEqual(context.repository.recentTracksRequests.last?.username, "new-user")
+        XCTAssertFalse(context.presenter.presentedScrobbles.contains { $0.contains { $0.trackName == "Old" } })
     }
 
     private func makeContext(username: String? = nil) -> Context {

@@ -4,6 +4,7 @@ import Foundation
 protocol RecentScrobblesPresenterProtocol: AnyObject {
     func attach(view: any RecentScrobblesViewProtocol)
     func presentUsername(_ username: String?)
+    func presentUsernameInputEnabled(_ isEnabled: Bool)
     func presentLoading()
     func presentError(_ error: LastFmError)
     func presentScrobbles(_ scrobbles: [RecentScrobble])
@@ -20,6 +21,10 @@ final class RecentScrobblesPresenter: RecentScrobblesPresenterProtocol {
 
     func presentUsername(_ username: String?) {
         view?.displayUsername(username)
+    }
+
+    func presentUsernameInputEnabled(_ isEnabled: Bool) {
+        view?.displayUsernameInputEnabled(isEnabled)
     }
 
     func presentLoading() {

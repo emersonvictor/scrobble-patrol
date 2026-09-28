@@ -34,6 +34,28 @@
         }
       }
     },
+    "albumDetail.listenerCount.plural" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ ouvintes"
+          }
+        }
+      }
+    },
+    "albumDetail.listenerCount.singular" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ ouvinte"
+          }
+        }
+      }
+    },
     "albumDetail.openLastFM" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -41,6 +63,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ver no LastFM"
+          }
+        }
+      }
+    },
+    "albumDetail.trackCount.plural" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ faixas"
+          }
+        }
+      }
+    },
+    "albumDetail.trackCount.singular" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ faixa"
           }
         }
       }

@@ -170,9 +170,15 @@ extension AlbumDetailViewController: AlbumDetailViewProtocol {
         artworkView.load(url: album.imageURL)
         albumNameLabel.text = album.name
         artistNameLabel.text = album.artistName
-        tracksCountLabel.text = "\(album.tracks.count) faixas"
+        let trackCount = String(album.tracks.count)
+        tracksCountLabel.text = album.tracks.count == 1
+            ? String(localized: .albumDetailTrackCountSingular(trackCount))
+            : String(localized: .albumDetailTrackCountPlural(trackCount))
         listenersCountLabel.text = album.listeners.map {
-            "\($0.formatted(.number.notation(.compactName))) ouvintes"
+            let listenerCount = $0.formatted(.number.notation(.compactName))
+            return $0 == 1
+                ? String(localized: .albumDetailListenerCountSingular(listenerCount))
+                : String(localized: .albumDetailListenerCountPlural(listenerCount))
         }
 
         tagsView.setTags(album.tags)

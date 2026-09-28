@@ -54,7 +54,11 @@ final class RecentScrobblesInteractor: RecentScrobblesInteractorProtocol {
     }
 
     func updateUsername(_ username: String) {
-        usernameStore.update(username)
+        guard !isLoading else { return }
+        let normalizedUsername = username.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard (normalizedUsername.isEmpty ? nil : normalizedUsername) != currentUsername else { return }
+
+        usernameStore.update(normalizedUsername)
         currentUsername = usernameStore.username
         currentPage = 1
         hasNextPage = false
@@ -102,6 +106,7 @@ private extension RecentScrobblesInteractor {
 
         let requestedUsername = currentUsername
         isLoading = true
+        presenter.presentUsernameInputEnabled(false)
         if !isRefreshing {
             presenter.presentLoading()
         }
@@ -112,6 +117,7 @@ private extension RecentScrobblesInteractor {
         ) { [weak self] result in
             guard let self else { return }
             isLoading = false
+            presenter.presentUsernameInputEnabled(true)
 
             if isRefreshing {
                 presenter.finishRefreshing()

@@ -3,6 +3,7 @@
 @MainActor
 final class RecentScrobblesPresenterSpy: RecentScrobblesPresenterProtocol {
     private(set) var presentedUsernames: [String?] = []
+    private(set) var usernameInputEnabledStates: [Bool] = []
     private(set) var loadingCallCount = 0
     private(set) var presentedErrors: [LastFmError] = []
     private(set) var presentedScrobbles: [[RecentScrobble]] = []
@@ -12,6 +13,10 @@ final class RecentScrobblesPresenterSpy: RecentScrobblesPresenterProtocol {
 
     func presentUsername(_ username: String?) {
         presentedUsernames.append(username)
+    }
+
+    func presentUsernameInputEnabled(_ isEnabled: Bool) {
+        usernameInputEnabledStates.append(isEnabled)
     }
 
     func presentLoading() {

@@ -4,6 +4,7 @@ import UIKit
 @MainActor
 protocol RecentScrobblesViewProtocol: AnyObject {
     func displayUsername(_ username: String?)
+    func displayUsernameInputEnabled(_ isEnabled: Bool)
     func displayLoading()
     func displayError(message: String, retryTitle: String)
     func displayScrobbles(_ scrobbles: [RecentScrobble])
@@ -151,6 +152,10 @@ extension RecentScrobblesViewController: UITableViewDelegate {
 extension RecentScrobblesViewController: RecentScrobblesViewProtocol {
     func displayUsername(_ username: String?) {
         usernameView.setUsername(username ?? "")
+    }
+
+    func displayUsernameInputEnabled(_ isEnabled: Bool) {
+        usernameView.setEnabled(isEnabled)
     }
 
     func displayLoading() {

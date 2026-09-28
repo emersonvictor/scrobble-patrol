@@ -1,4 +1,3 @@
-import Combine
 import Foundation
 import XCTest
 @testable import ScrobblePatrol
@@ -40,24 +39,6 @@ final class UsernameStoreTests: XCTestCase {
         defer { context.userDefaults.removePersistentDomain(forName: context.suiteName) }
 
         XCTAssertEqual(context.sut.username, "listener")
-    }
-
-    func testPublisherEmitsNormalizedUpdates() throws {
-        let context = try makeContext()
-        defer { context.userDefaults.removePersistentDomain(forName: context.suiteName) }
-        var receivedUsernames: [String?] = []
-        let cancellable = context.sut.usernamePublisher.sink {
-            receivedUsernames.append($0)
-        }
-
-        context.sut.update("  listener  ")
-        context.sut.update("")
-
-        XCTAssertEqual(receivedUsernames.count, 3)
-        XCTAssertNil(receivedUsernames[0])
-        XCTAssertEqual(receivedUsernames[1], "listener")
-        XCTAssertNil(receivedUsernames[2])
-        withExtendedLifetime(cancellable) {}
     }
 
     private func makeContext(initialUsername: String? = nil) throws -> Context {

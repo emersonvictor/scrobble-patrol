@@ -40,6 +40,14 @@ final class UsernameView: UIView, ViewCode {
         textField.text = username
     }
 
+    func setEnabled(_ isEnabled: Bool) {
+        if !isEnabled {
+            textField.resignFirstResponder()
+        }
+        textField.isEnabled = isEnabled
+        confirmButton.isEnabled = isEnabled
+    }
+
     func buildViewHierarchy() {
         addSubview(textField)
         addSubview(confirmButton)

@@ -3,6 +3,7 @@
 @MainActor
 final class RecentScrobblesViewSpy: RecentScrobblesViewProtocol {
     private(set) var displayedUsernames: [String?] = []
+    private(set) var usernameInputEnabledStates: [Bool] = []
     private(set) var loadingCallCount = 0
     private(set) var displayedErrors: [(message: String, retryTitle: String)] = []
     private(set) var displayedScrobbles: [[RecentScrobble]] = []
@@ -10,6 +11,10 @@ final class RecentScrobblesViewSpy: RecentScrobblesViewProtocol {
 
     func displayUsername(_ username: String?) {
         displayedUsernames.append(username)
+    }
+
+    func displayUsernameInputEnabled(_ isEnabled: Bool) {
+        usernameInputEnabledStates.append(isEnabled)
     }
 
     func displayLoading() {
